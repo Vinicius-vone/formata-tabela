@@ -25,9 +25,9 @@ def converter_valor_monetario_para_float(valor_monetario):
     return float(valor_formatado)
 
 # Definição das cores para a tabela
-cor_cabecalho = colors.HexColor("#f54238")
-cor_linhas_impar = colors.HexColor("#f5808d")
-cor_linhas_par = colors.HexColor("#ea9aa2")
+cor_cabecalho = colors.HexColor("#CF2D2D")
+cor_linhas_impar = colors.HexColor("#CF9595")
+cor_linhas_par = colors.HexColor("#F5D5D9")
 
 def on_page(canvas, doc):
     canvas.saveState()
@@ -120,14 +120,18 @@ def generate_pdf_table(data, output_file_path, titulo_texto, additional_tables=[
     doc.build(elements, onFirstPage=on_page, onLaterPages=on_page)
 
 def selecionar_arquivo_e_diretorio():
-    Tk().withdraw()  # Não mostrar a janela completa do Tk
+    root = Tk()
+    root.withdraw()  # Não mostrar a janela completa do Tk
+    root.attributes('-topmost', True)
     path_to_file = filedialog.askopenfilename(title="Selecione o arquivo Excel", filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")])
     output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
+    root.destroy()
     return path_to_file, output_directory
 
 def mostrar_mensagem():
     root = Tk()
     root.withdraw()  # Esconde a janela principal do tkinter
+    root.attributes('-topmost', True)
     messagebox.showinfo("Processamento Concluído", f"Arquivo processado salvo em: {output_directory}")
     root.destroy()
 
@@ -142,12 +146,15 @@ dicionario_convenios = {
     'FUNDACAO LIBERTAS (PREVIMINAS)':"Previminas", 'BRASIL ASSISTENCIA S/A':"Brasil Assistencia",
     'USISAUDE (FUNDAÇAO SAO FRANCISCO XAVIER)':"Usisaude", 'PATRONAL':"GEAP", 'AECO':"AECO", "UNIMED":"Unimed", 'CASU':"CASU", 
     'FUNDAFFEMG':"FUNDAFFEMG", 
-    'SAUDE BRADESCO INDIVIDUAL':"Bradesco Ind", 'A.M.M.P.':"AMMP", "PREMIUM SAUDE":"Premium Saude","SUL AMERICA AETNA SEGUROS E PR":"Sul América"
+    'SAUDE BRADESCO INDIVIDUAL':"Bradesco Ind", 'A.M.M.P.':"AMMP", "PREMIUM SAUDE":"Premium Saude","SUL AMERICA AETNA SEGUROS E PR":"Sul América",
+    'CONSORCIO INTERMUNICIPAL DE SA':"Cisver"
     }
 
 # Inicializações
 
+dados_crua_inicial = dados_crua_inicial[dados_crua_inicial["Pago"].isna()][["Registro", "Procedimento", "Paciente", "V. Faturado", "Data"]]
 dados_crua = dados_crua_inicial.ffill()
+
 
 
 medico_atual = ''
@@ -170,72 +177,46 @@ for index, linha in dados_crua.iterrows():
             'Convenio': convenio_atual
         })
 
-# Converter a lista de dicionários em um DataFrame, mantendo todas as colunas
-dados_processados_df1 = pd.DataFrame(dados_processados)
-dados_serv_profissionais = dados_processados_df1[dados_processados_df1['Procedimento'].str.contains("Serv. Profissionais", na=False)]
-dados_processados_df = dados_processados_df1[~dados_processados_df1['Procedimento'].str.contains("Serv. Profissionais", na=False)]
+dados_filtrados = pd.DataFrame(dados_processados)
 
 
 # Ajustando as colunas de data para o formato correto
-dados_processados_df['Data'] = pd.to_datetime(dados_processados_df['Data'], errors='coerce')
-dados_processados_df['Pago'] = pd.to_datetime(dados_processados_df['Pago'], errors='coerce')
-dados_processados_df['Data'] = pd.to_datetime(dados_processados_df['Data']).dt.strftime('%d/%m/%Y')
-dados_processados_df['Pago'] = pd.to_datetime(dados_processados_df['Pago']).dt.strftime('%d/%m/%Y')
-
-""" if ["V.Faturado", 'V.Recebido', 'Diferenca'] in dados_crua.columns:
-        dados_crua["V.Faturado"] = dados_crua["V.Faturado"].apply(formatar_valor)
-        dados_crua['V.Recebido'] = dados_crua['V.Recebido'].apply(formatar_valor)
-        dados_crua['Diferenca'] = dados_crua['Diferenca'].apply(formatar_valor) """
+dados_filtrados['Data'] = pd.to_datetime(dados_filtrados['Data'], errors='coerce')
+dados_filtrados['Data'] = pd.to_datetime(dados_filtrados['Data']).dt.strftime('%d/%m/%Y')
+dados_filtrados = dados_filtrados[~dados_filtrados['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 
 # Gerar PDFs separados por médico
-
-
-
-for nome_medico, grupo in dados_processados_df.groupby('Medico'):
+for nome_medico, grupo in dados_filtrados.groupby('Medico'):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
      grupo_sem_medico = grupo.drop('Medico', axis=1)
      # Converter a coluna "Valor" formatada de volta para float
-     grupo_sem_medico["V.Faturado"] = grupo_sem_medico["V.Faturado"].apply(valor_para_float)
-     grupo_sem_medico['V.Recebido'] = grupo_sem_medico['V.Recebido'].apply(valor_para_float)
-     grupo_sem_medico['Diferenca'] = grupo_sem_medico['Diferenca'].apply(valor_para_float)
+     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(valor_para_float)
      # Agrupar por convênio e somar valores
-     soma_por_convenio = grupo_sem_medico.groupby('Convenio').agg({'V.Faturado': 'sum', 'V.Recebido': 'sum', 'Diferenca': 'sum'}).reset_index()
+     soma_por_convenio = grupo_sem_medico.groupby('Convenio')["V. Faturado"].sum().reset_index()
      #Gerando a soma total para cada uma das colunas
-     total_faturado = soma_por_convenio['V.Faturado'].sum()
-     total_recebido = soma_por_convenio['V.Recebido'].sum()
-     total_diferenca = soma_por_convenio['Diferenca'].sum()
+     total_faturado = grupo_sem_medico['V. Faturado'].sum()
 
      # Formatar as colunas de valores para o formato de moeda
-     soma_por_convenio["V.Faturado"] = soma_por_convenio["V.Faturado"].apply(formatar_valor)
-     soma_por_convenio['V.Recebido'] = soma_por_convenio['V.Recebido'].apply(formatar_valor)
-     soma_por_convenio['Diferenca'] = soma_por_convenio['Diferenca'].apply(formatar_valor)
+     soma_por_convenio["V. Faturado"] = soma_por_convenio["V. Faturado"].apply(formatar_valor)
      total_faturado_formatado = formatar_valor(total_faturado)
-     total_recebido_formatado = formatar_valor(total_recebido)
-     total_diferenca_formatado = formatar_valor(total_diferenca)
-     dados_soma_total = [["Total Faturado", "Total Recebido", "Total Diferença"], [total_faturado_formatado, total_recebido_formatado, total_diferenca_formatado]]
+     dados_soma_total = [["Total Faturado"], [total_faturado_formatado]]
 
      # Preparar dados para terceira tabela
-     dados_serv_profissionais_medico = dados_serv_profissionais[dados_serv_profissionais['Medico'] == nome_medico]
-     dados_serv_profissionais_medico = dados_serv_profissionais_medico[~dados_serv_profissionais_medico['Registro'].astype(str).str.contains("Medico..:|Convenio:", na=False)].copy()
-     dados_serv_profissionais_medico = dados_serv_profissionais_medico.drop(columns=["Procedimento", "Data", "Pago", "Motivo da Glosa", "Medico"])
-     dados_serv_profissionais_medico["V.Faturado"] = dados_serv_profissionais_medico["V.Faturado"].apply(formatar_valor)
-     dados_serv_profissionais_medico['V.Recebido'] = dados_serv_profissionais_medico['V.Recebido'].apply(formatar_valor)
-     dados_serv_profissionais_medico['Diferenca'] = dados_serv_profissionais_medico['Diferenca'].apply(formatar_valor)
-
+     totais_por_paciente = grupo_sem_medico.groupby("Paciente")["V. Faturado"].sum().reset_index()
+     totais_por_paciente["V. Faturado"] = totais_por_paciente["V. Faturado"].apply(formatar_valor)
+     
      # Preparar dados para a primeira tabela
-     grupo_sem_medico["V.Faturado"] = grupo_sem_medico["V.Faturado"].apply(formatar_valor)
-     grupo_sem_medico['V.Recebido'] = grupo_sem_medico['V.Recebido'].apply(formatar_valor)
-     grupo_sem_medico['Diferenca'] = grupo_sem_medico['Diferenca'].apply(formatar_valor)
+     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(formatar_valor)
      dados_pdf = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
 
      #Preparar dados do total
 
      dados_pdf_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
-     dados_pdf_serv_profissionais = [dados_serv_profissionais_medico.columns.tolist()] + dados_serv_profissionais_medico.values.tolist()
+     dados_pdf_serv_profissionais = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
      nome_arquivo = ''.join(e for e in nome_medico if e.isalnum() or e in [' ', '_', '-']).strip()
      caminho_completo = os.path.join(output_directory, f"{nome_arquivo}_faturados_não_pagos_relatorio.pdf")
      titulo_texto = f"Valores Faturados Não Pagos: {nome_medico}"     # Chamar a função modificada para gerar o PDF incluindo a segunda tabela
      generate_pdf_table(dados_pdf, caminho_completo, titulo_texto, [("Totais por Convênio", dados_pdf_soma_conv), ("Totais por Paciente", dados_pdf_serv_profissionais), ("Soma Total", dados_soma_total)])
 
 
-mostrar_mensagem()
+#mostrar_mensagem()

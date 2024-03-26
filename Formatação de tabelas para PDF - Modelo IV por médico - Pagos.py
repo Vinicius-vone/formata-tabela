@@ -158,7 +158,8 @@ dicionario_convenios = {
     'FUNDACAO LIBERTAS (PREVIMINAS)':"Previminas", 'BRASIL ASSISTENCIA S/A':"Brasil Assistencia",
     'USISAUDE (FUNDAÇAO SAO FRANCISCO XAVIER)':"Usisaude", 'PATRONAL':"GEAP", 'AECO':"AECO", "UNIMED":"Unimed", 'CASU':"CASU", 
     'FUNDAFFEMG':"FUNDAFFEMG", 
-    'SAUDE BRADESCO INDIVIDUAL':"Bradesco Ind", 'A.M.M.P.':"AMMP", "PREMIUM SAUDE":"Premium Saude","SUL AMERICA AETNA SEGUROS E PR":"Sul América"
+    'SAUDE BRADESCO INDIVIDUAL':"Bradesco Ind", 'A.M.M.P.':"AMMP", "PREMIUM SAUDE":"Premium Saude","SUL AMERICA AETNA SEGUROS E PR":"Sul América",
+    'CONSORCIO INTERMUNICIPAL DE SA':"Cisver"
     }
 
 # Inicializações
@@ -229,7 +230,7 @@ for nome_medico, grupo in dados_processados_df.groupby('Medico'):
      total_recebido_formatado = formatar_valor(total_recebido)
      total_diferenca_formatado = formatar_valor(total_diferenca)
      dados_soma_total = [["Total Faturado", "Total Recebido", "Total Diferença"], [total_faturado_formatado, total_recebido_formatado, total_diferenca_formatado]]
-
+    
      # Preparar dados para terceira tabela
      dados_serv_profissionais_medico = dados_serv_profissionais[dados_serv_profissionais['Medico'] == nome_medico]
      dados_serv_profissionais_medico = dados_serv_profissionais_medico[~dados_serv_profissionais_medico['Registro'].astype(str).str.contains("Medico..:|Convenio:", na=False)].copy()

@@ -15,7 +15,7 @@ ignore_patterns = [
     "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
     "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Todas                                           |",
     "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
-    "| Processamento: Janeiro/2024 a Março/2024     Remessa: 000 a 999 Medicos: Todos                Prestadores: Todos",
+    "| Processamento:",
     "|                       Subtotal              --->>",
     "|                       Total para este medico -->>",
     "|                                Total da conta ->>",
@@ -270,7 +270,7 @@ dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)
 
 #Ajustando as datas e os formatos de Data
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'], errors='coerce')
+dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'], errors='coerce', format='%d/%m/%Y')
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data']).dt.strftime('%d/%m/%Y')
 dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago']).dt.strftime('%d/%m/%Y')
 dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')

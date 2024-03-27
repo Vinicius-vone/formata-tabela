@@ -15,12 +15,12 @@ ignore_patterns = [
     "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
     "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Todas                                           |",
     "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
-    "| Processamento: Janeiro/2024 a Março/2024     Remessa: 000 a 999 Medicos: Todos                Prestadores: Todos",
+    "| Processamento:",
     "|                       Subtotal              --->>",
     "|                       Total para este medico -->>",
     "|                                Total da conta ->>",
     "+----------------------------------------------------+-------------------------------------------------------+-------------+-------------+----------+----------+",
-    "| Convenio: 0004 BANCO DO BRASIL  a  0200 PLAMEDH                                                                 C.D.C.: 000000 a 999999   Unidade: 00 a 99   |",
+    "|     C.D.C.: 000000 a 999999   Unidade: 00 a 99   |",
     "| Registro |  Data    | Paciente                     | Procedimento             | Motivo da Glosa |  Baixa   | V. Faturado | V. Recebido | Diferenca|  A Maior |",
     "|                       Total Geral           --->>  |                Número de Contas: 4099                 |   665.099,50|   137.092,37|-528.155,02|    147,89|",
     "|                       Total Convenio        -->> ",
@@ -73,9 +73,9 @@ def selecionar_arquivo_e_diretorio():
     root = Tk()
     root.withdraw()  # Não mostrar a janela completa do Tk
     root.attributes('-topmost', True)
-    path_to_file = filedialog.askopenfilename(title="Selecione o arquivo de texto", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file = filedialog.askopenfilename(title="Selecione o arquivo de texto", filetypes=[("Text files", "*.txt")])
     root.destroy()
-    return path_to_file, 
+    return path_to_file 
 
 path_to_file = selecionar_arquivo_e_diretorio()
 
@@ -145,6 +145,7 @@ for index, linha in dados_crua_inicial.iterrows():
             'Medico': medico_atual,
             'Convenio': convenio_atual
         })
+
 dados_processados_pagos = pd.DataFrame(dados_processados)
 
 dados_processados_pagos_1 = dados_processados_pagos[dados_processados_pagos['Pago'].notna()]
@@ -161,7 +162,7 @@ dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)
 
 #Ajustando as datas e os formatos de Data
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'], errors='coerce')
+dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'], errors='coerce', format='%d/%m/%Y')
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data']).dt.strftime('%d/%m/%Y')
 dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago']).dt.strftime('%d/%m/%Y')
 dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')

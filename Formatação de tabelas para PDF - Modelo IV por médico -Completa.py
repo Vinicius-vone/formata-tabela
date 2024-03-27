@@ -23,7 +23,8 @@ ignore_patterns = [
     "| Convenio: 0004 BANCO DO BRASIL  a  0200 PLAMEDH                                                                 C.D.C.: 000000 a 999999   Unidade: 00 a 99   |",
     "| Registro |  Data    | Paciente                     | Procedimento             | Motivo da Glosa |  Baixa   | V. Faturado | V. Recebido | Diferenca|  A Maior |",
     "|                       Total Geral           --->>  |                Número de Contas: 4099                 |   665.099,50|   137.092,37|-528.155,02|    147,89|",
-    "|                       Total Convenio        -->> "
+    "|                       Total Convenio        -->> ",
+    "|                       Total Geral           --->> "
 ]
 
 def line_should_be_ignored(line):

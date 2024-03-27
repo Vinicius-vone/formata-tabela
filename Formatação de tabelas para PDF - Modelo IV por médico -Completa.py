@@ -9,6 +9,45 @@ from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT  # Importação necessária para centralizar o texto
 import os
 
+#FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
+# Padrões de linhas para ignorar
+ignore_patterns = [
+    "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Todas                                           |",
+    "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
+    "| Processamento: Janeiro/2024 a Março/2024     Remessa: 000 a 999 Medicos: Todos                Prestadores: Todos",
+    "|                       Subtotal              --->>",
+    "|                       Total para este medico -->>",
+    "|                                Total da conta ->>",
+    "+----------------------------------------------------+-------------------------------------------------------+-------------+-------------+----------+----------+",
+    "| Convenio: 0004 BANCO DO BRASIL  a  0200 PLAMEDH                                                                 C.D.C.: 000000 a 999999   Unidade: 00 a 99   |",
+    "| Registro |  Data    | Paciente                     | Procedimento             | Motivo da Glosa |  Baixa   | V. Faturado | V. Recebido | Diferenca|  A Maior |",
+    "|                       Total Geral           --->>  |                Número de Contas: 4099                 |   665.099,50|   137.092,37|-528.155,02|    147,89|",
+    "|                       Total Convenio        -->> "
+]
+
+def line_should_be_ignored(line):
+    """
+    Verifica se a linha contém algum dos padrões especificados para ser ignorada.
+    """
+    for pattern in ignore_patterns:
+        if pattern in line:
+            return True
+    return False
+
+def read_file_to_list(input_file_path):
+    """
+    Lê o arquivo e retorna uma lista com as linhas que não contêm os padrões especificados.
+    """
+    lines = []
+    with open(input_file_path, 'r', encoding='ISO-8859-1') as infile:
+        for line in infile:
+            if not line_should_be_ignored(line):
+                # Adiciona a linha à lista, removendo espaços extras e o caractere de nova linha
+                cleaned_line = line.strip()
+                lines.append(cleaned_line)
+    return lines
+
 # Função para formatar valores em formato de moeda
 
 def formatar_valor(valor):
@@ -16,7 +55,12 @@ def formatar_valor(valor):
 
 # Função para converter valor formatado de volta para float
 def valor_para_float(valor_formatado):
-    return float(valor_formatado)
+    if isinstance(valor_formatado, str) and (',' in valor_formatado or '.' in valor_formatado):
+        # Substitui ponto por nada e vírgula por ponto
+        valor_formatado = valor_formatado.replace('.', '').replace(',', '.')
+    # Tenta converter para float, se não for uma string retorna o valor como está
+    return float(valor_formatado) if isinstance(valor_formatado, str) else valor_formatado
+    
 
 def converter_valor_monetario_para_float(valor_monetario):
     # Remove o símbolo de moeda e substitui a vírgula por ponto
@@ -42,9 +86,9 @@ def on_page(canvas, doc):
     header.drawOn(canvas, doc.leftMargin, doc.height + doc.topMargin - max_height)
 
     # Texto do cabeçalho
-    header_text = f"Relatório de Valores Faturados Não Pagos"
+    header_text = f"Relatório de Valores"
     canvas.setFont('Helvetica', 12)
-    canvas.drawString(doc.width + doc.leftMargin - 150, doc.height + doc.topMargin - 20, header_text)
+    canvas.drawString(doc.width + doc.leftMargin - 120, doc.height + doc.topMargin - 20, header_text)
 
     # Linha do cabeçalho
     canvas.line(doc.leftMargin, doc.height + doc.topMargin - max_height - 5, doc.width + doc.leftMargin, doc.height + doc.topMargin - max_height - 5)
@@ -54,7 +98,7 @@ def on_page(canvas, doc):
     canvas.setFont('Helvetica', 10)
     canvas.drawString(doc.width + doc.leftMargin - 50, 0.25 * inch, footer_text_right)
 
-    footer_text_left = "Data = Data do Faturamento"
+    footer_text_left = "Data = Data do Faturamento | Pago = Data do Pagamento"
     canvas.setFont('Helvetica', 10)
     canvas.drawString(doc.leftMargin, 0.25 * inch, footer_text_left)
 
@@ -119,17 +163,17 @@ def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pa
             elements.append(PageBreak())
     # Adicionando cabeçalho e tabelas para não pagos
     if data_nao_pagos:
-        elements.append(Paragraph("Valores Não Pagos", styles['Heading1']))
+        elements.append(Paragraph("Valores Faturados", styles['Heading1']))
         for title, data in data_nao_pagos:
             create_styled_table(title, data, cor_cabecalho_nao_pagos, cor_linhas_impar_nao_pagos, cor_linhas_par_nao_pagos)
 
-    doc.build(elements)
+    doc.build(elements, onFirstPage=on_page, onLaterPages=on_page)
 
 def selecionar_arquivo_e_diretorio():
     root = Tk()
     root.withdraw()  # Não mostrar a janela completa do Tk
     root.attributes('-topmost', True)
-    path_to_file = filedialog.askopenfilename(title="Selecione o arquivo Excel", filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")])
+    path_to_file = filedialog.askopenfilename(title="Selecione o arquivo de texto", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
     root.destroy()
     return path_to_file, output_directory
@@ -142,7 +186,33 @@ def mostrar_mensagem():
     root.destroy()
 
 path_to_file, output_directory = selecionar_arquivo_e_diretorio()
-dados_crua_inicial = pd.read_excel(path_to_file)
+
+#FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
+# Ler arquivo e criar lista
+lines_list = read_file_to_list(path_to_file)
+
+# Dividir cada linha pela barra vertical '|' e remover espaços vazios das strings resultantes
+data = [line.split('|') for line in lines_list]
+# Remover espaços vazios em cada elemento da lista
+data = [[item.strip() for item in row] for row in data]
+
+# Criar DataFrame
+dados_crua_inicial = pd.DataFrame(data)
+
+# O DataFrame agora possui as linhas como entradas, mas pode ter colunas de mais ou de menos dependendo do conteúdo das linhas.
+# Você pode precisar ajustar os nomes das colunas manualmente, dependendo da estrutura do seu arquivo e do número de colunas esperadas.
+# Por exemplo, se esperamos 10 colunas, podemos nomeá-las assim:
+
+# Substitui strings vazias por NaN para identificar corretamente campos vazios
+dados_crua_inicial.replace('', pd.NA, inplace=True)
+
+# Remove linhas onde todos os campos estão vazios
+dados_crua_inicial.dropna(how='all', inplace=True)
+dados_crua_inicial = dados_crua_inicial.drop(dados_crua_inicial.columns[[0, 10, 11]], axis=1)
+# Se necessário, você pode querer resetar os índices após remover linhas
+dados_crua_inicial.reset_index(drop=True, inplace=True)
+dados_crua_inicial.columns = ['Registro', 'Data', 'Paciente', 'Procedimento', 'Motivo da Glosa', 'Pago', 'V. Faturado', 'V. Recebido', 'Diferenca']
+
 
 #Dicionário com os nomes corretos para os convenios
 dicionario_convenios = {
@@ -183,7 +253,7 @@ for index, linha in dados_crua_inicial.iterrows():
         })
 dados_processados_pagos = pd.DataFrame(dados_processados)
 
-dados_processados_pagos_1 = dados_processados[dados_processados['Pago'].notna()]
+dados_processados_pagos_1 = dados_processados_pagos[dados_processados_pagos['Pago'].notna()]
 dados_processados_pagos_final = dados_processados_pagos_1.ffill()
 
 dados_processados_nao_pagos = pd.DataFrame(dados_processados)
@@ -196,11 +266,11 @@ dados_processados_pagos_df = pd.DataFrame(dados_processados_pagos_final)
 dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)
 
 #Ajustando as datas e os formatos de Data
-dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce')
+dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
 dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'], errors='coerce')
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data']).dt.strftime('%d/%m/%Y')
 dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago']).dt.strftime('%d/%m/%Y')
-dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'], errors='coerce')
+dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
 dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data']).dt.strftime('%d/%m/%Y')
 
 dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]

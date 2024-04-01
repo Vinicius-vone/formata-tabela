@@ -13,7 +13,7 @@ import os
 # Padrões de linhas para ignorar
 ignore_patterns = [
     "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
-    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Todas                                           |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                                                            |",
     "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
     "| Processamento:",
     "|                       Subtotal              --->>",
@@ -147,31 +147,15 @@ for index, linha in dados_crua_inicial.iterrows():
             'Convenio': convenio_atual
         })
 
-dados_processados_pagos = pd.DataFrame(dados_processados)
+dados_processados_glosas_1 = pd.DataFrame(dados_processados)
+dados_processados_glosas = dados_processados_glosas_1.ffill()
+dados_processados_glosas_df = pd.DataFrame(dados_processados_glosas)
 
-dados_processados_pagos_1 = dados_processados_pagos[dados_processados_pagos['Pago'].notna()]
-dados_processados_pagos_final = dados_processados_pagos_1.ffill()
+dados_processados_glosas_df['Data'] = pd.to_datetime(dados_processados_glosas_df['Data'], errors='coerce', format='%d/%m/%Y')
+dados_processados_glosas_df['Pago'] = pd.to_datetime(dados_processados_glosas_df['Pago'], errors='coerce', format='%d/%m/%Y')
+dados_processados_glosas_df['Data'] = pd.to_datetime(dados_processados_glosas_df['Data']).dt.strftime('%d/%m/%Y')
+dados_processados_glosas_df['Pago'] = pd.to_datetime(dados_processados_glosas_df['Pago']).dt.strftime('%d/%m/%Y')
 
-dados_processados_nao_pagos = pd.DataFrame(dados_processados)
+dados_processados_glosas_df = dados_processados_glosas_df[~dados_processados_glosas_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 
-dados_processados_nao_pagos_1 = dados_processados_nao_pagos[dados_processados_nao_pagos['Pago'].isna()][["Registro", "Procedimento", "Paciente", "V. Faturado", "Data", "Convenio", "Medico"]]
-dados_processados_nao_pagos_final = dados_processados_nao_pagos_1.ffill()
-
-
-dados_processados_pagos_df = pd.DataFrame(dados_processados_pagos_final)
-dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)
-
-#Ajustando as datas e os formatos de Data
-dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'], errors='coerce', format='%d/%m/%Y')
-dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data']).dt.strftime('%d/%m/%Y')
-dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago']).dt.strftime('%d/%m/%Y')
-dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data']).dt.strftime('%d/%m/%Y')
-
-dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
-dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
-
-
-dados_processados_pagos_df.to_excel('C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Dashboard/Projeto Diagnóstico de Faturamento/glosas_df.xlsx', index=False)
-dados_processados_nao_pagos_df.to_excel('C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Dashboard/Projeto Diagnóstico de Faturamento/dados_processados_nao_pagos_df.xlsx', index=False)
+dados_processados_glosas_df.to_excel('C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Dashboard/Projeto Diagnóstico de Faturamento/glosas_df.xlsx', index=False)

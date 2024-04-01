@@ -14,6 +14,7 @@ import os
 ignore_patterns = [
     "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
     "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                                                            |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Apenas Glosas                                   |",
     "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
     "| Processamento:",
     "|                       Subtotal              --->>",

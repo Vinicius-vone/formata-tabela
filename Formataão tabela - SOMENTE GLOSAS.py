@@ -26,7 +26,9 @@ ignore_patterns = [
     "|                       Total Geral           --->>  |                Número de Contas: 4099                 |   665.099,50|   137.092,37|-528.155,02|    147,89|",
     "|                       Total Convenio        -->> ",
     "|                       Total Geral           --->> ",
-    "|                       Total para este medico -->>  |"
+    "|                       Total para este medico -->>  |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Apenas Pagas                                    |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Não Pagas                                       |"
 ]
 
 def line_should_be_ignored(line):
@@ -105,7 +107,7 @@ dados_crua_inicial.dropna(how='all', inplace=True)
 dados_crua_inicial = dados_crua_inicial.drop(dados_crua_inicial.columns[[0, 10, 11]], axis=1)
 # Se necessário, você pode querer resetar os índices após remover linhas
 dados_crua_inicial.reset_index(drop=True, inplace=True)
-dados_crua_inicial.columns = ['Registro', 'Data', 'Paciente', 'Procedimento', 'Motivo da Glosa', 'Pago', 'V. Faturado', 'V. Recebido', 'Diferenca']
+dados_crua_inicial.columns = ['Registro', 'Data', 'Paciente', 'Procedimento', 'Motivo da Glosa', 'Realizado', 'V. Faturado', 'V. Recebido', 'Diferenca']
 
 
 #Dicionário com os nomes corretos para os convenios
@@ -153,10 +155,10 @@ dados_processados_glosas = dados_processados_glosas_1.ffill()
 dados_processados_glosas_df = pd.DataFrame(dados_processados_glosas)
 
 dados_processados_glosas_df['Data'] = pd.to_datetime(dados_processados_glosas_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_glosas_df['Pago'] = pd.to_datetime(dados_processados_glosas_df['Pago'], errors='coerce', format='%d/%m/%Y')
+dados_processados_glosas_df['Realizado'] = pd.to_datetime(dados_processados_glosas_df['Realizado'], errors='coerce', format='%d/%m/%Y')
 dados_processados_glosas_df['Data'] = pd.to_datetime(dados_processados_glosas_df['Data']).dt.strftime('%d/%m/%Y')
-dados_processados_glosas_df['Pago'] = pd.to_datetime(dados_processados_glosas_df['Pago']).dt.strftime('%d/%m/%Y')
+dados_processados_glosas_df['Realizado'] = pd.to_datetime(dados_processados_glosas_df['Realizado']).dt.strftime('%d/%m/%Y')
 
 dados_processados_glosas_df = dados_processados_glosas_df[~dados_processados_glosas_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 
-dados_processados_glosas_df.to_excel('C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Dashboard/Projeto Diagnóstico de Faturamento/glosas_df.xlsx', index=False)
+dados_processados_glosas_df.to_excel('C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Dashboard/Projeto Diagnóstico de Faturamento/nao_pagos_010123-310324_df.xlsx', index=False)

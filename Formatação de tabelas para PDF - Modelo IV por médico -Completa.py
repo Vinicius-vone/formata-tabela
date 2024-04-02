@@ -8,6 +8,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT  # Importação necessária para centralizar o texto
 import os
+import re
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Padrões de linhas para ignorar
@@ -28,7 +29,18 @@ ignore_patterns = [
     "|                       Total Geral           --->> ",
     "|                       Total para este medico -->>  |",
     "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Apenas Pagas                                    |",
-    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Não Pagas                                       |"
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Não Pagas                                       |",
+    "| Sistema de Gestão Hospitalar                 Faturamento de Convenios",
+    "+------------------------------------+-+---------+------+-+--+-+----------+----------+-------+---+---+---+---+----+----+--------------------------+------------+",
+    "|      Nome do Paciente              |R|Registro |N.Fis.|T|R |N|Dt. Atend.| Dt. Alta |Horario|SP |SH |RC |MM |Emit|Fech| Convenio                 | Valor Conta|",
+    "+------------------------------------+-+---------+------+-+--+-+----------+----------+-------+---+---+---+---+----+----+--------------------------+------------+",
+    "|  Total de Registros por Médico   =>",
+    "+--------------------------------------------------------------------------------------------------------------------------------------------------------------+",
+    "|                                       S.P.Data - Servico de Processamento de Dados Ltda. - Telefone: (031)3399-2500                                          |",
+    "|             Total de Registros   =>",
+    "|                                                 HOSPITAL NOSSA SENHORA DAS MERCES                                                                            |",
+    "| Emitido em:                 Processamento:                C.D.C.: 000000 a 999999               Unidade: 00 a 99 |"
+    "|                                                                                                                                                              |"
 ]
 
 def line_should_be_ignored(line):
@@ -139,7 +151,7 @@ def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pa
         heading_style = styles['Heading2']
         heading_style.alignment = TA_CENTER
         elements.append(Paragraph(title, heading_style))  # Adiciona o título da tabela centralizado
-        table = Table(data)
+        table = Table(data, repeatRows = 1)
         table_style = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), cor_cabecalho),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -180,9 +192,10 @@ def selecionar_arquivo_e_diretorio():
     root.attributes('-topmost', True)
     path_to_file_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_nao_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos não pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file_a_faturar = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos a faturar", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
     root.destroy()
-    return path_to_file_pagos, path_to_file_nao_pagos, output_directory
+    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory
 
 def mostrar_mensagem():
     root = Tk()
@@ -191,28 +204,14 @@ def mostrar_mensagem():
     messagebox.showinfo("Processamento Concluído", f"Arquivo processado salvo em: {output_directory}")
     root.destroy()
 
-def processar_dados(dados_crua, dados_processados):
-    for index, linha in dados_crua.iterrows():
-        registro = str(linha['Registro']).strip()
-        if "Convenio:" in registro:
-            convenio_atual = " ".join(registro.split()[2:])
-            convenio_atual = dicionario_convenios.get(convenio_atual, convenio_atual)
-        elif "Medico..:" in registro:
-            medico_atual = " ".join(registro.split()[2:])
-        else:
-            # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
-            dados_processados.append({
-                **linha.to_dict(), # Mantém todas as colunas originais
-                'Medico': medico_atual,
-                'Convenio': convenio_atual
-            })
 
-path_to_file_pagos, path_to_file_nao_pagos, output_directory = selecionar_arquivo_e_diretorio()
+path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory = selecionar_arquivo_e_diretorio()
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
 lines_list_nao_pagos = read_file_to_list(path_to_file_nao_pagos)
+lines_list_a_faturar = read_file_to_list(path_to_file_a_faturar)
 
 # Dividir cada linha pela barra vertical '|' e remover espaços vazios das strings resultantes
 data_pagos = [line.split('|') for line in lines_list_pagos]
@@ -223,14 +222,15 @@ data_nao_pagos = [line.split('|') for line in lines_list_nao_pagos]
 # Remover espaços vazios em cada elemento da lista
 data_nao_pagos = [[item.strip() for item in row] for row in data_nao_pagos]
 
+data_a_faturar = [line.split('|') for line in lines_list_a_faturar]
+# Remover espaços vazios em cada elemento da lista
+data_a_faturar = [[item.strip() for item in row] for row in data_a_faturar]
+
+
 # Criar DataFrame
 dados_crua_inicial_pagos = pd.DataFrame(data_pagos)
 dados_crua_inicial_nao_pagos = pd.DataFrame(data_nao_pagos)
-
-
-# O DataFrame agora possui as linhas como entradas, mas pode ter colunas de mais ou de menos dependendo do conteúdo das linhas.
-# Você pode precisar ajustar os nomes das colunas manualmente, dependendo da estrutura do seu arquivo e do número de colunas esperadas.
-# Por exemplo, se esperamos 10 colunas, podemos nomeá-las assim:
+dados_crua_inicial_a_faturar = pd.DataFrame(data_a_faturar)
 
 # Substitui strings vazias por NaN para identificar corretamente campos vazios
 dados_crua_inicial_pagos.replace('', pd.NA, inplace=True)
@@ -251,6 +251,16 @@ dados_crua_inicial_nao_pagos = dados_crua_inicial_nao_pagos.drop(dados_crua_inic
 dados_crua_inicial_nao_pagos.reset_index(drop=True, inplace=True)
 dados_crua_inicial_nao_pagos.columns = ['Registro', 'Data', 'Paciente', 'Procedimento', 'Motivo da Glosa', 'Realizado', 'V. Faturado', 'V. Recebido', 'Diferenca']
 
+dados_crua_inicial_a_faturar.replace('', pd.NA, inplace=True)
+
+# Remove linhas onde todos os campos estão vazios
+dados_crua_inicial_a_faturar.dropna(how='all', inplace=True)
+dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar.drop(dados_crua_inicial_a_faturar.columns[[0, 2, 4, 5, 6, 7,  10, 11, 12, 13, 14, 15, 16, 18, 19]], axis=1)
+# Se necessário, você pode querer resetar os índices após remover linhas
+dados_crua_inicial_a_faturar.reset_index(drop=True, inplace=True)
+dados_crua_inicial_a_faturar.columns = ['Nome do Paciente', 'Registro', 'Atendimento', 'Alta', 'Convenio']
+dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Emitido em:", na=False)]
+
 #Dicionário com os nomes corretos para os convenios
 dicionario_convenios = {
     'BANCO DO BRASIL':"Banco do Brasil", 'POLICIA MILITAR':"Polícia Militar", 'CEMIG SAUDE':"CEMIG", 'FUSEX':"FUSEX",
@@ -263,7 +273,10 @@ dicionario_convenios = {
     'SAUDE BRADESCO INDIVIDUAL':"Bradesco Ind", 'A.M.M.P.':"AMMP", "PREMIUM SAUDE":"Premium Saude","SUL AMERICA AETNA SEGUROS E PR":"Sul América",
     'CONSORCIO INTERMUNICIPAL DE SA':"Cisver", "USISAUDE (FUNDAÇAO SAO FRANCIS":'Usisaude', "ECT (EMP. BRAS. DE CORREIOS E": 'ECT',
     "PATRONAL-GEAP":'GEAP', "CASU - CAIXA DE ASSISTENCIA A": "Caixa Econômica", "SASC - SANTA CASA SAUDE COMPLE":"SASC", 
-    "AECO-ASSOCIACAO DOS EMPREGADOS":"AECO"
+    "AECO-ASSOCIACAO DOS EMPREGADOS":"AECO", "CONSORCIO INTERMUNICI":"Cisver", "GV CLINICAS MEDICINA":"GV", "SUL AMERICA AETNA SEG":"Sul América", 
+    "SAUDE BRADESCO EMPRES":"Bradesco Emp", "CAIXA ECONOMICA FEDER":"Caixa Econômica", "FUNDACAO LIBERTAS (PR":"Previminas", "ALBERGUE SANTO ANTONI":"Albergue S. Antônio",
+    "SAUDE BRADESCO INDIVI":"Bradesco Ind", "ECT (EMP. BRAS. DE CO":"ECT", "PROASERV":"Proaserv", "CASU - CAIXA DE ASSIS":"CASU", "SASC - SANTA CASA SAU":"SASC",
+    "USISAUDE (FUNDAÇAO SA":"Usisaude", "AECO-ASSOCIACAO DOS E":"AECO", "SABIN SINAI VITA ASSI":"SABIN"
     }
 
 
@@ -272,14 +285,55 @@ dicionario_convenios = {
 
 
 #Criação das colunas com o nome do médico e com o nome do convênio para os pagos e não pagos
-medico_atual = ''
-convenio_atual = ''
+medico_atual_pagos = ''
+medico_atual_nao_pagos = ''
+medico_atual_a_faturar = ''
+convenio_atual_pagos = ''
+convenio_atual_nao_pagos = ''
 dados_processados_pagos = []
 dados_processados_nao_pagos = []
+dados_processados_a_faturar = []
 
+for index, linha in dados_crua_inicial_pagos.iterrows():
+    registro = str(linha['Registro']).strip()
+    if "Convenio:" in registro:
+        convenio_atual_pagos = " ".join(registro.split()[2:])
+        convenio_atual_pagos = dicionario_convenios.get(convenio_atual_pagos, convenio_atual_pagos)
+    elif "Medico..:" in registro:
+        medico_atual_pagos = " ".join(registro.split()[2:])
+    else:
+        # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
+        dados_processados_pagos.append({
+            **linha.to_dict(), # Mantém todas as colunas originais
+            'Medico': medico_atual_pagos,
+            'Convenio': convenio_atual_pagos
+        })
 
-processar_dados(dados_crua_inicial_pagos, dados_processados_pagos)
-processar_dados(dados_crua_inicial_nao_pagos, dados_processados_nao_pagos)
+for index, linha in dados_crua_inicial_nao_pagos.iterrows():
+    registro = str(linha['Registro']).strip()
+    if "Convenio:" in registro:
+        convenio_atual_nao_pagos = " ".join(registro.split()[2:])
+        convenio_atual_nao_pagos = dicionario_convenios.get(convenio_atual_nao_pagos, convenio_atual_nao_pagos)
+    elif "Medico..:" in registro:
+        medico_atual_nao_pagos = " ".join(registro.split()[2:])
+    else:
+        # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
+        dados_processados_nao_pagos.append({
+            **linha.to_dict(), # Mantém todas as colunas originais
+            'Medico': medico_atual_nao_pagos,
+            'Convenio': convenio_atual_nao_pagos
+        })
+
+for index, linha in dados_crua_inicial_a_faturar.iterrows():
+    registro = str(linha['Nome do Paciente']).strip()
+    if "Medico:" in registro:
+        medico_atual_a_faturar = re.sub('^\d+ - ', '', " ".join(registro.split()[1:])).strip()  # Atualiza o médico atual, removendo o código
+    else:
+        # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
+        dados_processados_a_faturar.append({
+            **linha.to_dict(), # Mantém todas as colunas originais
+            'Medico': medico_atual_a_faturar
+        })
 
 dados_processados_pagos = pd.DataFrame(dados_processados_pagos)
 dados_processados_pagos_final = dados_processados_pagos.ffill()
@@ -288,8 +342,16 @@ dados_processados_nao_pagos = pd.DataFrame(dados_processados_nao_pagos)
 dados_processados_nao_pagos_final = dados_processados_nao_pagos.ffill()
 dados_processados_nao_pagos_final = dados_processados_nao_pagos_final[["Registro", "Data", "Paciente", "Procedimento", "Realizado", "V. Faturado", "Medico", "Convenio"]]
 
+dados_processados_a_faturar = pd.DataFrame(dados_processados_a_faturar)
+dados_processados_a_faturar_final = dados_processados_a_faturar.ffill()
+dados_processados_a_faturar_final['Convenio'] = dados_processados_a_faturar_final['Convenio'].map(dicionario_convenios)
+
+
+
 dados_processados_pagos_df = pd.DataFrame(dados_processados_pagos_final)
 dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)
+dados_processados_a_faturar_df = pd.DataFrame(dados_processados_a_faturar_final)
+
 
 #Ajustando as datas e os formatos de Data
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
@@ -300,12 +362,21 @@ dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pa
 dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data']).dt.strftime('%d/%m/%Y')
 dados_processados_nao_pagos_df['Realizado'] = pd.to_datetime(dados_processados_nao_pagos_df['Realizado'], errors='coerce', format='%d/%m/%Y')
 dados_processados_nao_pagos_df['Realizado'] = pd.to_datetime(dados_processados_nao_pagos_df['Realizado']).dt.strftime('%d/%m/%Y')
+dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_faturar_df['Alta'], errors='coerce', format='%d/%m/%Y')
+dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento'], errors='coerce', format='%d/%m/%Y')
+dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_faturar_df['Alta']).dt.strftime('%d/%m/%Y')
+dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento']).dt.strftime('%d/%m/%Y')
+
+
 
 dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 
 dados_medicos_pagos = {}
 dados_medicos_nao_pagos = {}
+dados_medicos_a_faturar = {}
+
+############ CONTIUNUAR DAQUI ###################################
 
 #Preparação dos dados por médico para os pedidos não pagos
 for nome_medico_nao_pagos, grupo in dados_processados_nao_pagos_df.groupby("Medico"):

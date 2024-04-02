@@ -286,7 +286,7 @@ dados_processados_pagos_final = dados_processados_pagos.ffill()
 
 dados_processados_nao_pagos = pd.DataFrame(dados_processados_nao_pagos)
 dados_processados_nao_pagos_final = dados_processados_nao_pagos.ffill()
-
+dados_processados_nao_pagos_final = dados_processados_nao_pagos_final[["Registro", "Data", "Paciente", "Procedimento", "Realizado", "V. Faturado", "Medico", "Convenio"]]
 
 dados_processados_pagos_df = pd.DataFrame(dados_processados_pagos_final)
 dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)

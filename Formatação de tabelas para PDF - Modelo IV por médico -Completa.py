@@ -191,6 +191,22 @@ def mostrar_mensagem():
     messagebox.showinfo("Processamento Concluído", f"Arquivo processado salvo em: {output_directory}")
     root.destroy()
 
+def processar_dados(dados_crua, dados_processados):
+    for index, linha in dados_crua.iterrows():
+        registro = str(linha['Registro']).strip()
+        if "Convenio:" in registro:
+            convenio_atual = " ".join(registro.split()[2:])
+            convenio_atual = dicionario_convenios.get(convenio_atual, convenio_atual)
+        elif "Medico..:" in registro:
+            medico_atual = " ".join(registro.split()[2:])
+        else:
+            # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
+            dados_processados.append({
+                **linha.to_dict(), # Mantém todas as colunas originais
+                'Medico': medico_atual,
+                'Convenio': convenio_atual
+            })
+
 path_to_file_pagos, path_to_file_nao_pagos, output_directory = selecionar_arquivo_e_diretorio()
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
@@ -261,35 +277,10 @@ convenio_atual = ''
 dados_processados_pagos = []
 dados_processados_nao_pagos = []
 
-for index, linha in dados_crua_inicial_pagos.iterrows():
-    registro = str(linha['Registro']).strip()
-    if "Convenio:" in registro:
-        convenio_atual = " ".join(registro.split()[2:])
-        convenio_atual = dicionario_convenios.get(convenio_atual, convenio_atual)
-    elif "Medico..:" in registro:
-        medico_atual = " ".join(registro.split()[2:])  # Atualiza o médico atual, removendo o código
-    else:
-        # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
-        dados_processados_pagos.append({
-            **linha.to_dict(), # Mantém todas as colunas originais
-            'Medico': medico_atual,
-            'Convenio': convenio_atual
-        })
 
-for index, linha in dados_crua_inicial_nao_pagos.iterrows():
-    registro = str(linha['Registro']).strip()
-    if "Convenio:" in registro:
-        convenio_atual = " ".join(registro.split()[2:])
-        convenio_atual = dicionario_convenios.get(convenio_atual, convenio_atual)
-    elif "Medico..:" in registro:
-        medico_atual = " ".join(registro.split()[2:])  # Atualiza o médico atual, removendo o código
-    else:
-        # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
-        dados_processados_nao_pagos.append({
-            **linha.to_dict(), # Mantém todas as colunas originais
-            'Medico': medico_atual,
-            'Convenio': convenio_atual
-        })
+processar_dados(dados_crua_inicial_pagos, dados_processados_pagos)
+processar_dados(dados_crua_inicial_nao_pagos, dados_processados_nao_pagos)
+
 dados_processados_pagos = pd.DataFrame(dados_processados_pagos)
 dados_processados_pagos_final = dados_processados_pagos.ffill()
 

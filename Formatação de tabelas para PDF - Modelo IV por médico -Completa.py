@@ -291,10 +291,7 @@ dicionario_convenios = {
 
 
 
-#Completa os valores faltantes do arquivo excel de entrada
-
-
-#Criação das colunas com o nome do médico e com o nome do convênio para os pagos e não pagos
+#Criação das colunas com o nome do médico e com o nome do convênio para os pagos, não pagos e a faturar
 medico_atual_pagos = ''
 medico_atual_nao_pagos = ''
 medico_atual_a_faturar = ''
@@ -304,6 +301,8 @@ dados_processados_pagos = []
 dados_processados_nao_pagos = []
 dados_processados_a_faturar = []
 
+
+#Cria as tabelas a partir dos dados obtidos de cada arquivo txt, incluindo p médico e o convênio em cada linha de forma interativa
 for index, linha in dados_crua_inicial_pagos.iterrows():
     registro = str(linha['Registro']).strip()
     if "Convenio:" in registro:
@@ -344,7 +343,7 @@ for index, linha in dados_crua_inicial_a_faturar.iterrows():
             **linha.to_dict(), # Mantém todas as colunas originais
             'Medico': medico_atual_a_faturar
         })
-
+#Criando os dataframes a parti da tabela gerada pelo código de inclusão de médicos e fazendo o ffill para completar os valores faltantes
 dados_processados_pagos = pd.DataFrame(dados_processados_pagos)
 dados_processados_pagos_final = dados_processados_pagos.ffill()
 
@@ -378,10 +377,12 @@ dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_fatu
 dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento']).dt.strftime('%d/%m/%Y')
 
 
-
+#Retirando as linhas que contêm a palavra "Serv. Profissionais"
 dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 
+
+#Criação dos dicionários para cada médico
 dados_medicos_pagos = {}
 dados_medicos_nao_pagos = {}
 dados_medicos_a_faturar = {}
@@ -404,11 +405,12 @@ for nome_medico_nao_pagos, grupo in dados_processados_nao_pagos_df.groupby("Medi
     totais_por_paciente["V. Faturado"] = totais_por_paciente["V. Faturado"].apply(formatar_valor)
     # Preparar dados para a primeira tabela
     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(formatar_valor)
-
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
     dados_nao_pagos_soma_total = [["Total Faturado"], [total_faturado_formatado]]
     dados_pdf_nao_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_nao_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
     dados_pdf_nao_pagos_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
+    #Lista final para a construção das tabelas
     dados_medicos_nao_pagos[nome_medico_nao_pagos] = [dados_nao_pagos_soma_total, dados_pdf_nao_pagos, dados_pdf_nao_pagos_soma_conv, dados_pdf_nao_pagos_paciente]
 
 
@@ -450,19 +452,25 @@ for nome_medico_pagos, grupo in dados_processados_pagos_df.groupby("Medico"):
     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(formatar_valor)
     grupo_sem_medico['V. Recebido'] = grupo_sem_medico['V. Recebido'].apply(formatar_valor)
     grupo_sem_medico['Diferenca'] = grupo_sem_medico['Diferenca'].apply(formatar_valor)
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
     dados_pdf_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
     dados_pdf_pagos_por_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
+    #Lista final para a construção das tabelas
     dados_medicos_pagos[nome_medico_pagos] = [dados_pagos_soma_total, dados_pdf_pagos, dados_pdf_pagos_soma_conv, dados_pdf_pagos_por_paciente]
 
 for nome_medico_a_faturar, grupo in dados_processados_a_faturar_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
     grupo_sem_medico = grupo.drop('Medico', axis=1)
+    #Fazendo a contagem da quantidade de pricedimentos por convênio
     contagem_por_convenio = grupo_sem_medico.groupby('Convenio')['Registro'].count().reset_index()
+    #Contagem da quantidade de procedimentos total
     contagem_total = grupo_sem_medico["Registro"].count()
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
     dados_pdf_contagem_total = [["Total"], [contagem_total]]
     dados_pdf_a_faturar = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_contagem_convenio_a_faturar = [contagem_por_convenio.columns.to_list()] + contagem_por_convenio.values.tolist()
+    #Lista final para a construção das tabelas
     dados_medicos_a_faturar[nome_medico_a_faturar] = [dados_pdf_a_faturar, dados_pdf_contagem_convenio_a_faturar, dados_pdf_contagem_total]
 
 todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys())
@@ -472,7 +480,7 @@ for nome_medico in todos_medicos:
     caminho_completo = os.path.join(output_directory, f"{nome_arquivo}_relatorio.pdf")
     titulo_texto = f"Relatório de valores: {nome_medico}"
 
-    # Inicializa listas vazias para tabelas pagas e não pagas
+    # Inicializa listas vazias para tabelas pagas, não pagas e a faturar
     tabelas_pagos = []
     tabelas_nao_pagos = []
     tabelas_a_faturar = []

@@ -124,7 +124,7 @@ def on_page(canvas, doc):
     
     canvas.restoreState()
 
-def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pagos=[]):
+def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pagos=[], data_a_faturar = []):
     # Definindo as cores para as tabelas pagos e não pagos
     cor_cabecalho_pagos = colors.HexColor("#3b559a")
     cor_linhas_impar_pagos = colors.HexColor("#c2d1ff")
@@ -133,6 +133,10 @@ def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pa
     cor_cabecalho_nao_pagos = colors.HexColor("#CF2D2D")
     cor_linhas_impar_nao_pagos = colors.HexColor("#CF9595")
     cor_linhas_par_nao_pagos = colors.HexColor("#F5D5D9")
+
+    cor_cabecalho_a_faturar = colors.HexColor("#61aa50")
+    cor_linhas_impar_a_faturar = colors.HexColor("#a4d09a")
+    cor_linhas_par_a_faturar = colors.HexColor("#c3e0bd")
 
     doc = SimpleDocTemplate(output_file_path, pagesize=landscape(letter), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=1.5*inch, bottomMargin=1*inch)
     styles = getSampleStyleSheet()
@@ -183,7 +187,13 @@ def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pa
         elements.append(Paragraph("Valores Faturados", styles['Heading1']))
         for title, data in data_nao_pagos:
             create_styled_table(title, data, cor_cabecalho_nao_pagos, cor_linhas_impar_nao_pagos, cor_linhas_par_nao_pagos)
-
+    if data_nao_pagos and data_a_faturar:
+        elements.append(PageBreak())
+    if data_a_faturar:
+        elements.append(Paragraph("Procedimentos a Faturar", styles['Heading1']))
+        for title, data in data_a_faturar:
+            create_styled_table(title, data, cor_cabecalho_a_faturar, cor_linhas_impar_a_faturar, cor_linhas_par_a_faturar)
+    
     doc.build(elements, onFirstPage=on_page, onLaterPages=on_page)
 
 def selecionar_arquivo_e_diretorio():
@@ -260,7 +270,7 @@ dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar.drop(dados_crua_inic
 dados_crua_inicial_a_faturar.reset_index(drop=True, inplace=True)
 dados_crua_inicial_a_faturar.columns = ['Nome do Paciente', 'Registro', 'Atendimento', 'Alta', 'Convenio']
 dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Emitido em:", na=False)]
-
+dados_crua_inicial_a_faturar['Convenio'] = dados_crua_inicial_a_faturar['Convenio'].str.replace('^\d+-', '', regex=True)
 #Dicionário com os nomes corretos para os convenios
 dicionario_convenios = {
     'BANCO DO BRASIL':"Banco do Brasil", 'POLICIA MILITAR':"Polícia Militar", 'CEMIG SAUDE':"CEMIG", 'FUSEX':"FUSEX",
@@ -376,8 +386,6 @@ dados_medicos_pagos = {}
 dados_medicos_nao_pagos = {}
 dados_medicos_a_faturar = {}
 
-############ CONTIUNUAR DAQUI ###################################
-
 #Preparação dos dados por médico para os pedidos não pagos
 for nome_medico_nao_pagos, grupo in dados_processados_nao_pagos_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
@@ -447,7 +455,17 @@ for nome_medico_pagos, grupo in dados_processados_pagos_df.groupby("Medico"):
     dados_pdf_pagos_por_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
     dados_medicos_pagos[nome_medico_pagos] = [dados_pagos_soma_total, dados_pdf_pagos, dados_pdf_pagos_soma_conv, dados_pdf_pagos_por_paciente]
 
-todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys())
+for nome_medico_a_faturar, grupo in dados_processados_a_faturar_df.groupby("Medico"):
+    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
+    grupo_sem_medico = grupo.drop('Medico', axis=1)
+    contagem_por_convenio = grupo_sem_medico.groupby('Convenio')['Registro'].count().reset_index()
+    contagem_total = grupo_sem_medico["Registro"].count()
+    dados_pdf_contagem_total = [["Total"], [contagem_total]]
+    dados_pdf_a_faturar = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
+    dados_pdf_contagem_convenio_a_faturar = [contagem_por_convenio.columns.to_list()] + contagem_por_convenio.values.tolist()
+    dados_medicos_a_faturar[nome_medico_a_faturar] = [dados_pdf_a_faturar, dados_pdf_contagem_convenio_a_faturar, dados_pdf_contagem_total]
+
+todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys())
 
 for nome_medico in todos_medicos:
     nome_arquivo = ''.join(e for e in nome_medico if e.isalnum() or e in [' ', '_', '-']).strip()
@@ -457,6 +475,7 @@ for nome_medico in todos_medicos:
     # Inicializa listas vazias para tabelas pagas e não pagas
     tabelas_pagos = []
     tabelas_nao_pagos = []
+    tabelas_a_faturar = []
 
     # Verifica se o médico está presente nos dados pagos e adiciona as tabelas correspondentes
     if nome_medico in dados_medicos_pagos:
@@ -474,10 +493,14 @@ for nome_medico in todos_medicos:
                               ("Soma Total", dados_medicos_nao_pagos[nome_medico][0])]:
             tabelas_nao_pagos.append((titulo, dados))
 
+    if nome_medico in dados_medicos_a_faturar:
+        for titulo, dados in [("Procedimentos a serem faturados", dados_medicos_a_faturar[nome_medico][0]),
+                                ("Número de procedimentos a faturar por convênio", dados_medicos_a_faturar[nome_medico][1]),
+                                ("Número total de procedimentos a faturar", dados_medicos_a_faturar[nome_medico][2])]:
+            tabelas_a_faturar.append((titulo, dados))
+
     # Chama a função de geração de PDF apenas se houver tabelas para incluir
-    if tabelas_pagos or tabelas_nao_pagos:
-        generate_pdf_table(caminho_completo, titulo_texto, tabelas_pagos, tabelas_nao_pagos)
+    if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar:
+        generate_pdf_table(caminho_completo, titulo_texto, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar)
 
 mostrar_mensagem()
-
-    

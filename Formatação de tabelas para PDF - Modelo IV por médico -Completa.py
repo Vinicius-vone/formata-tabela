@@ -85,6 +85,18 @@ def converter_valor_monetario_para_float(valor_monetario):
     # Converte para float
     return float(valor_formatado)
 
+def selecionar_arquivo_e_diretorio():
+    root = Tk()
+    root.withdraw()  # Não mostrar a janela completa do Tk
+    root.attributes('-topmost', True)
+    path_to_file_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file_nao_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos não pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file_a_faturar = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos a faturar", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
+    subtitulo = simpledialog.askstring("Subtítulo", "Digite o subtítulo do documento:", parent=root)
+    root.destroy()
+    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory, subtitulo
+
 def on_page(canvas, doc):
     canvas.saveState()
     styles = getSampleStyleSheet()
@@ -109,7 +121,7 @@ def on_page(canvas, doc):
 
     # Linha do cabeçalho
     canvas.line(doc.leftMargin, doc.height + doc.topMargin - max_height - 5, doc.width + doc.leftMargin, doc.height + doc.topMargin - max_height - 5)
-
+  
     # Rodapé
     footer_text_right = "Página %d" % doc.page
     canvas.setFont('Helvetica', 10)
@@ -124,7 +136,7 @@ def on_page(canvas, doc):
     
     canvas.restoreState()
 
-def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pagos=[], data_a_faturar = []):
+def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], data_nao_pagos=[], data_a_faturar = []):
     # Definindo as cores para as tabelas pagos e não pagos
     cor_cabecalho_pagos = colors.HexColor("#3b559a")
     cor_linhas_impar_pagos = colors.HexColor("#c2d1ff")
@@ -146,6 +158,12 @@ def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pa
     title_style.alignment = TA_CENTER
     titulo = Paragraph(nome_medico, title_style)
     elements = [titulo]
+
+    subtitulo_style = styles['Normal']  # Ou escolha outro estilo conforme necessário
+    subtitulo_style.alignment = TA_CENTER
+    subtitulo_para = Paragraph(subtitulo, subtitulo_style)
+    elements.append(Spacer(1, 12))  # Ajuste o espaço conforme necessário
+    elements.append(subtitulo_para)
     
     header_style = styles['Heading1']
     header_style.alignment = TA_CENTER
@@ -196,16 +214,7 @@ def generate_pdf_table(output_file_path, nome_medico, data_pagos=[], data_nao_pa
     
     doc.build(elements, onFirstPage=on_page, onLaterPages=on_page)
 
-def selecionar_arquivo_e_diretorio():
-    root = Tk()
-    root.withdraw()  # Não mostrar a janela completa do Tk
-    root.attributes('-topmost', True)
-    path_to_file_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
-    path_to_file_nao_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos não pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
-    path_to_file_a_faturar = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos a faturar", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
-    output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
-    root.destroy()
-    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory
+
 
 def mostrar_mensagem():
     root = Tk()
@@ -215,7 +224,7 @@ def mostrar_mensagem():
     root.destroy()
 
 
-path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory = selecionar_arquivo_e_diretorio()
+path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory, subtitulo = selecionar_arquivo_e_diretorio()
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
@@ -509,6 +518,6 @@ for nome_medico in todos_medicos:
 
     # Chama a função de geração de PDF apenas se houver tabelas para incluir
     if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar:
-        generate_pdf_table(caminho_completo, titulo_texto, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar)
+        generate_pdf_table(caminho_completo, titulo_texto, subtitulo, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar)
 
 mostrar_mensagem()

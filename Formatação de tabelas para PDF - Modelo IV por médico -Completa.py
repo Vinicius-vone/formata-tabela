@@ -159,7 +159,7 @@ def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], 
     titulo = Paragraph(nome_medico, title_style)
     elements = [titulo]
 
-    subtitulo_style = styles['Normal']  # Ou escolha outro estilo conforme necessário
+    subtitulo_style = styles['Title']  # Ou escolha outro estilo conforme necessário
     subtitulo_style.alignment = TA_CENTER
     subtitulo_para = Paragraph(subtitulo, subtitulo_style)
     elements.append(Spacer(1, 12))  # Ajuste o espaço conforme necessário
@@ -363,7 +363,6 @@ dados_processados_nao_pagos_final = dados_processados_nao_pagos_final[["Registro
 dados_processados_a_faturar = pd.DataFrame(dados_processados_a_faturar)
 dados_processados_a_faturar_final = dados_processados_a_faturar.ffill()
 dados_processados_a_faturar_final['Convenio'] = dados_processados_a_faturar_final['Convenio'].map(dicionario_convenios)
-
 
 
 dados_processados_pagos_df = pd.DataFrame(dados_processados_pagos_final)

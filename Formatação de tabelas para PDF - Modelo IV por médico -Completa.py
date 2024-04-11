@@ -120,7 +120,7 @@ def on_page(canvas, doc):
     canvas.drawString(doc.width + doc.leftMargin - 120, doc.height + doc.topMargin - 20, header_text)
     header_text_c = f"{subtitulo}"
     canvas.setFont('Helvetica', 12)
-    canvas.drawString(doc.width + doc.leftMargin - 480, doc.height + doc.topMargin - 20, header_text_c)
+    canvas.drawString(doc.width + doc.leftMargin - 450, doc.height + doc.topMargin - 20, header_text_c)
     
 
     # Linha do cabeçalho

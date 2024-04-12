@@ -120,7 +120,7 @@ def on_page(canvas, doc):
     canvas.drawString(doc.width + doc.leftMargin - 120, doc.height + doc.topMargin - 20, header_text)
     header_text_c = f"{subtitulo}"
     canvas.setFont('Helvetica', 12)
-    canvas.drawString(doc.width + doc.leftMargin - 450, doc.height + doc.topMargin - 20, header_text_c)
+    canvas.drawString(doc.width + doc.leftMargin - 440, doc.height + doc.topMargin - 20, header_text_c)
     
 
     # Linha do cabeçalho
@@ -490,7 +490,7 @@ todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.ke
 for nome_medico in todos_medicos:
     nome_arquivo = ''.join(e for e in nome_medico if e.isalnum() or e in [' ', '_', '-']).strip()
     caminho_completo = os.path.join(output_directory, f"{nome_arquivo}_relatorio.pdf")
-    titulo_texto = f"Relatório de valores: {nome_medico}"
+    titulo_texto = f"Relatório de Honorários Médicos: {nome_medico}"
 
     # Inicializa listas vazias para tabelas pagas, não pagas e a faturar
     tabelas_pagos = []

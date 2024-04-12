@@ -57,5 +57,6 @@ for medico, email_medico in medicos_emails.items():
         """
         email.Attachments.Add(caminho_completo_arquivo)
         email.Send()
+        print(f"Email enviado para {medico}")
     else:
         print(f"Arquivo não encontrado para o médico: {medico}")

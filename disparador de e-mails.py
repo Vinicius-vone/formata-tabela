@@ -25,6 +25,8 @@ outlook = win32.Dispatch("Outlook.Application")
 emails = "kelonios2000@yahoo.com.br" #não sei ainda como vou fazer a lista
 periodo = "10 de outubro de 2023 a 10 de abril de 2024" #ainda vou ver como criar a variável, deixei como lista só pra deixa o objeto periodo já criado
 
+#AINDA É NECESSÁRIA A CRIAÇÃO DE UM DICIONÁRIO ONDE A CHAVE É NO NOME DO MÉDICO E O VALOR É O EMAIL. ESSE DICIONÁRIO VAI SER USADO
+#NA ITERAÇÃO PARA QUE A PARTIR DO NOME DO MÉDICO SEJA POSSÍVEL ESCOLHER O EMAIL E O ARQUIVO PRESENTE NA PASTA DE RELATÓRIOS
 
 #BLOCO ABAIXO DEVE SER ITERADO SOBRE TODOS OS MÉDICOS E PARA CADA NOME DE MÉDICO ADICIONAR O ARQUIVO PRESENTE NA LISTA
 #DE ARQUIVOS CRIADA A PARTIR DA PASTA SELECIONADA

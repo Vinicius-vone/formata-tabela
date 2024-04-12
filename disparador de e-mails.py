@@ -19,6 +19,7 @@ root.withdraw()
 # Abre a janela de diálogo para o usuário escolher uma pasta
 folder_selected = filedialog.askdirectory()
 arquivos = os.listdir(folder_selected)
+arquivos_sem_correspondencia = set(arquivos)  # Conjunto para armazenar arquivos sem correspondência
 
 # Listas para rastrear os e-mails enviados e não enviados
 emails_enviados = []
@@ -50,6 +51,7 @@ for medico, email_medico in medicos_emails.items():
 
     if arquivo_medico:
         caminho_completo_arquivo = os.path.join(folder_selected, arquivo_medico)
+        arquivos_sem_correspondencia.discard(arquivo_medico)  # Remove o arquivo da lista de sem correspondência
         
         # Criando um e-mail
         email = outlook.CreateItem(0)
@@ -76,5 +78,7 @@ with open(caminho_arquivo_relatorio, 'w') as arquivo_relatorio:
     arquivo_relatorio.write("\n".join(emails_enviados))
     arquivo_relatorio.write("\n\nE-mails Não Enviados (arquivo não encontrado):\n")
     arquivo_relatorio.write("\n".join(emails_nao_enviados))
+    arquivo_relatorio.write("\n\nArquivos Sem Correspondência de Médico:\n")
+    arquivo_relatorio.write("\n".join(arquivos_sem_correspondencia))
 
 print(f"Relatório de e-mails enviados e não enviados foi salvo como {caminho_arquivo_relatorio}.")

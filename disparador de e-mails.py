@@ -19,6 +19,10 @@ root.withdraw()
 folder_selected = filedialog.askdirectory()
 arquivos = os.listdir(folder_selected)
 
+# Listas para rastrear os e-mails enviados e não enviados
+emails_enviados = []
+emails_nao_enviados = []
+
 #Definição da assinatura a ser inserida no e-mail
 assinatura = """<p style="text-align: left;"><strong>Alfredo Vincícius Andrade Guimarães</strong><br>
 <strong>Setor de Faturamento</strong><br>
@@ -29,11 +33,12 @@ assinatura = """<p style="text-align: left;"><strong>Alfredo Vincícius Andrade 
 
 # Criando integração do Python com o Outlook
 outlook = win32.Dispatch("Outlook.Application")
-medicos_emails = {
-    "Alfredo Vinícius": "email1@example.com",
-    "Maria Clara": "email2@example.com",
+medicos_emails = medicos_emails = {
+    "Alfredo Vinícius": "kelonios@gmail.com",
+    "Maria Clara": "kelonios2000@yahoo.com.br",
+    "Antonio Rato" : "afredovag@yahoo.com.br"
     # Adicione mais médicos conforme necessário
-}
+} 
 periodo = "10 de outubro de 2023 a 10 de abril de 2024" #ainda vou ver como criar a variável, deixei como lista só pra deixa o objeto periodo já criado
 
 for medico, email_medico in medicos_emails.items():
@@ -58,5 +63,16 @@ for medico, email_medico in medicos_emails.items():
         email.Attachments.Add(caminho_completo_arquivo)
         email.Send()
         print(f"Email enviado para {medico}")
+        emails_enviados.append(f"{medico} ({email_medico})")
     else:
         print(f"Arquivo não encontrado para o médico: {medico}")
+        emails_nao_enviados.append(f"{medico} ({email_medico})")
+
+# Escrevendo o relatório em um arquivo de texto
+with open('relatorio_emails.txt', 'w') as arquivo_relatorio:
+    arquivo_relatorio.write("E-mails Enviados:\n")
+    arquivo_relatorio.write("\n".join(emails_enviados))
+    arquivo_relatorio.write("\n\nE-mails Não Enviados (arquivo não encontrado):\n")
+    arquivo_relatorio.write("\n".join(emails_nao_enviados))
+
+print("Relatório de e-mails enviados e não enviados foi salvo como 'relatorio_emails.txt'.")

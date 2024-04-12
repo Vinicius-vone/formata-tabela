@@ -29,12 +29,11 @@ assinatura = """<p style="text-align: left;"><strong>Alfredo Vincícius Andrade 
 
 # Criando integração do Python com o Outlook
 outlook = win32.Dispatch("Outlook.Application")
-medicos_emails = medicos_emails = {
-    "Alfredo Vinícius": "kelonios@gmail.com",
-    "Maria Clara": "kelonios2000@yahoo.com",
-    "Antonio Rato" : "afredovag@yahoo.com.br"
+medicos_emails = {
+    "Alfredo Vinícius": "email1@example.com",
+    "Maria Clara": "email2@example.com",
     # Adicione mais médicos conforme necessário
-} 
+}
 periodo = "10 de outubro de 2023 a 10 de abril de 2024" #ainda vou ver como criar a variável, deixei como lista só pra deixa o objeto periodo já criado
 
 for medico, email_medico in medicos_emails.items():

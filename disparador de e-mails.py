@@ -5,6 +5,7 @@ import os
 import unicodedata
 
 def normalizar_nome(nome):
+    #função que retira acentos das palavras
     nome_sem_acentos = ''.join(c for c in unicodedata.normalize('NFD', nome) if unicodedata.category(c) != 'Mn')
     nome_upper = nome_sem_acentos.upper()
     # Remover palavras específicas do nome do arquivo
@@ -69,10 +70,11 @@ for medico, email_medico in medicos_emails.items():
         emails_nao_enviados.append(f"{medico} ({email_medico})")
 
 # Escrevendo o relatório em um arquivo de texto
-with open('relatorio_emails.txt', 'w') as arquivo_relatorio:
+caminho_arquivo_relatorio = os.path.join(folder_selected, 'relatorio_emails.txt')
+with open(caminho_arquivo_relatorio, 'w') as arquivo_relatorio:
     arquivo_relatorio.write("E-mails Enviados:\n")
     arquivo_relatorio.write("\n".join(emails_enviados))
     arquivo_relatorio.write("\n\nE-mails Não Enviados (arquivo não encontrado):\n")
     arquivo_relatorio.write("\n".join(emails_nao_enviados))
 
-print("Relatório de e-mails enviados e não enviados foi salvo como 'relatorio_emails.txt'.")
+print(f"Relatório de e-mails enviados e não enviados foi salvo como {caminho_arquivo_relatorio}.")

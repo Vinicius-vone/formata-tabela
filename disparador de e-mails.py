@@ -2,7 +2,14 @@ import win32com.client as win32
 import pandas as pd
 from tkinter import Tk, filedialog
 import os
+import unicodedata
 
+def normalizar_nome(nome):
+    nome_sem_acentos = ''.join(c for c in unicodedata.normalize('NFD', nome) if unicodedata.category(c) != 'Mn')
+    nome_upper = nome_sem_acentos.upper()
+    # Remover palavras específicas do nome do arquivo
+    nome_limpo = nome_upper.replace('_RELATORIO', '').replace('.PDF', '')
+    return nome_limpo
 
 # Seleção dos anexos - Cria uma lista com o nome de todos os arquivos presentes na pasta selecionada
 # Cria e esconde a janela principal do Tkinter
@@ -22,26 +29,34 @@ assinatura = """<p style="text-align: left;"><strong>Alfredo Vincícius Andrade 
 
 # Criando integração do Python com o Outlook
 outlook = win32.Dispatch("Outlook.Application")
-emails = "kelonios2000@yahoo.com.br" #não sei ainda como vou fazer a lista
+medicos_emails = medicos_emails = {
+    "Alfredo Vinícius": "kelonios@gmail.com",
+    "Maria Clara": "kelonios2000@yahoo.com",
+    "Antonio Rato" : "afredovag@yahoo.com.br"
+    # Adicione mais médicos conforme necessário
+} 
 periodo = "10 de outubro de 2023 a 10 de abril de 2024" #ainda vou ver como criar a variável, deixei como lista só pra deixa o objeto periodo já criado
 
-#AINDA É NECESSÁRIA A CRIAÇÃO DE UM DICIONÁRIO ONDE A CHAVE É NO NOME DO MÉDICO E O VALOR É O EMAIL. ESSE DICIONÁRIO VAI SER USADO
-#NA ITERAÇÃO PARA QUE A PARTIR DO NOME DO MÉDICO SEJA POSSÍVEL ESCOLHER O EMAIL E O ARQUIVO PRESENTE NA PASTA DE RELATÓRIOS
+for medico, email_medico in medicos_emails.items():
+    nome_normalizado = normalizar_nome(medico)
 
-#BLOCO ABAIXO DEVE SER ITERADO SOBRE TODOS OS MÉDICOS E PARA CADA NOME DE MÉDICO ADICIONAR O ARQUIVO PRESENTE NA LISTA
-#DE ARQUIVOS CRIADA A PARTIR DA PASTA SELECIONADA
-# Criando um e-mail
-email = outlook.CreateItem(0)
-medico = "Alfredo Vinícius" #Lista de médicos para iterar no código e enviar o e-mail para todos
-# Configurando as informações do e-mail
-email.To = f"{emails}"
-email.Subject = f"HNSM - Relatório de Honorários Médicos - {periodo}"
-email.HTMLBody = f"""
-<p>Prezado Dr.{medico}</p>
-<p> Segue em anexo o relatório dos honorários médicos a respeito dos procedimentos pagos, faturados e a faturar referentes ao período de {periodo}</p>
-<p>Aenciosamente,<\p>
-{assinatura}
-"""
-anexo = f"C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Reatórios Médicos/{arquivos}"
-email.Attachments.Add(anexo)
-email.Send()
+    # Tentativa de encontrar um arquivo que corresponda ao nome normalizado do médico
+    arquivo_medico = next((arq for arq in arquivos if nome_normalizado in normalizar_nome(arq)), None)
+
+    if arquivo_medico:
+        caminho_completo_arquivo = os.path.join(folder_selected, arquivo_medico)
+        
+        # Criando um e-mail
+        email = outlook.CreateItem(0)
+        email.To = email_medico
+        email.Subject = f"HNSM - Relatório de Honorários Médicos - {periodo}"
+        email.HTMLBody = f"""
+        <p>Prezado(a) Dr(a). {medico},</p>
+        <p>Segue em anexo o relatório dos honorários médicos a respeito dos procedimentos pagos, faturados e a faturar referentes ao período de {periodo}.</p>
+        <p>Atenciosamente,</p>
+        {assinatura}
+        """
+        email.Attachments.Add(caminho_completo_arquivo)
+        email.Send()
+    else:
+        print(f"Arquivo não encontrado para o médico: {medico}")

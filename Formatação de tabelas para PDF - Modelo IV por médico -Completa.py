@@ -92,10 +92,9 @@ def selecionar_arquivo_e_diretorio():
     path_to_file_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_nao_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos não pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_a_faturar = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos a faturar", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
-    output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
     subtitulo = simpledialog.askstring("Subtítulo", "Digite o subtítulo do documento:", parent=root)
     root.destroy()
-    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory, subtitulo
+    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo
 
 def on_page(canvas, doc):
     canvas.saveState()
@@ -228,8 +227,8 @@ def mostrar_mensagem():
     root.destroy()
 
 
-path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory, subtitulo = selecionar_arquivo_e_diretorio()
-
+path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo = selecionar_arquivo_e_diretorio()
+output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Tabelas Médicos"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)

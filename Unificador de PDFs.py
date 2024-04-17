@@ -7,14 +7,14 @@ def selecionar_arquivo_e_diretorio():
     root = Tk()
     root.withdraw()  # Não mostrar a janela completa do Tk
     root.attributes('-topmost', True)
-    path_to_file_tabelas = filedialog.askdirectory(title="Selecione o arquivo de tabelas")
-    path_to_file_graficos = filedialog.askdirectory(title="Selecione o arquivo de gráficos")
     output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
     root.destroy()
-    return path_to_file_tabelas, path_to_file_graficos, output_directory
+    return output_directory
 # Caminhos dos diretórios
-diretorio1, diretorio2, diretorio_final = selecionar_arquivo_e_diretorio()
- 
+diretorio_final = selecionar_arquivo_e_diretorio()
+diretorio1 = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Tabelas Médicos"
+diretorio2 = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Gráficos Médicos"
+
 
 # Listar os arquivos nos diretórios
 arquivos1 = set(os.listdir(diretorio1))

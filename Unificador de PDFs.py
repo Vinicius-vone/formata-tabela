@@ -59,6 +59,13 @@ def delete_pdf_files(diretorio_tabelas, diretorio_graficos):
         except Exception as e:
             print(f"Erro ao deletar o arquivo {file_path}: {e}")
 
+def mostrar_mensagem():
+    root = Tk()
+    root.withdraw()  # Esconde a janela principal do tkinter
+    root.attributes('-topmost', True)
+    messagebox.showinfo("Processamento Concluído", f"Arquivos combinados salvos em: {diretorio_final}")
+    root.destroy()
+
 # Combinar todos os PDFs de mesmo nome
 for arquivo in arquivos_comuns:
     if arquivo.endswith('.pdf'):  # Verificar se é um arquivo PDF
@@ -66,4 +73,4 @@ for arquivo in arquivos_comuns:
         print(f"Combinado: {arquivo}")
 
 delete_pdf_files(diretorio1, diretorio2)
-print("Todos os PDFs combinados com sucesso!")
+mostrar_mensagem()

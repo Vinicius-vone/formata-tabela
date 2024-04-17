@@ -224,7 +224,7 @@ def mostrar_mensagem():
     root = Tk()
     root.withdraw()  # Esconde a janela principal do tkinter
     root.attributes('-topmost', True)
-    messagebox.showinfo("Processamento Concluído", f"Arquivo processado salvo em: {output_directory}")
+    messagebox.showinfo("Processamento Concluído", f"Tabelas processadas salvas em: {output_directory}")
     root.destroy()
 
 

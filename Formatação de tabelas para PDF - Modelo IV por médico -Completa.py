@@ -142,17 +142,17 @@ def on_page(canvas, doc):
 
 def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], data_nao_pagos=[], data_a_faturar = []):
     # Definindo as cores para as tabelas pagos e não pagos
-    cor_cabecalho_pagos = colors.HexColor("#3b559a")
-    cor_linhas_impar_pagos = colors.HexColor("#c2d1ff")
-    cor_linhas_par_pagos = colors.HexColor("#e8edfc")
+    cor_cabecalho_pagos = colors.HexColor("#52c569")
+    cor_linhas_impar_pagos = colors.HexColor("#86d549")
+    cor_linhas_par_pagos = colors.HexColor("#c2df23")
     
-    cor_cabecalho_nao_pagos = colors.HexColor("#CF2D2D")
-    cor_linhas_impar_nao_pagos = colors.HexColor("#CF9595")
-    cor_linhas_par_nao_pagos = colors.HexColor("#F5D5D9")
+    cor_cabecalho_nao_pagos = colors.HexColor("#d5546e")
+    cor_linhas_impar_nao_pagos = colors.HexColor("#e76f5a")
+    cor_linhas_par_nao_pagos = colors.HexColor("#f68d45")
 
-    cor_cabecalho_a_faturar = colors.HexColor("#61aa50")
-    cor_linhas_impar_a_faturar = colors.HexColor("#a4d09a")
-    cor_linhas_par_a_faturar = colors.HexColor("#c3e0bd")
+    cor_cabecalho_a_faturar = colors.HexColor("#fa7d5e")
+    cor_linhas_impar_a_faturar = colors.HexColor("#fed395")
+    cor_linhas_par_a_faturar = colors.HexColor("#fcfdbf")
 
     doc = SimpleDocTemplate(output_file_path, pagesize=landscape(letter), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=1.5*inch, bottomMargin=1*inch)
     styles = getSampleStyleSheet()

@@ -1,6 +1,7 @@
 from PyPDF2 import PdfReader, PdfWriter
 import os
 from tkinter import Tk, filedialog, simpledialog, messagebox
+import glob
 
 def selecionar_arquivo_e_diretorio():
     root = Tk()
@@ -42,10 +43,27 @@ def combinar_pdfs(nome_arquivo):
     with open(os.path.join(diretorio_final, nome_arquivo), 'wb') as f:
         writer.write(f)
 
+
+def delete_pdf_files(diretorio_tabelas, diretorio_graficos):
+    # Cria o caminho completo para buscar arquivos .png
+    search_path_tabelas = os.path.join(diretorio_tabelas, '*.pdf')
+    search_path_graficos = os.path.join(diretorio_graficos, '*.pdf')
+    # Usa glob para encontrar todos os arquivos .png no diretório especificado
+    png_files = glob.glob(search_path_tabelas) + glob.glob(search_path_graficos)
+    
+    # Itera sobre a lista de arquivos .png encontrados e os remove
+    for file_path in png_files:
+        try:
+            os.remove(file_path)
+            print(f"Arquivo {file_path} deletado com sucesso.")
+        except Exception as e:
+            print(f"Erro ao deletar o arquivo {file_path}: {e}")
+
 # Combinar todos os PDFs de mesmo nome
 for arquivo in arquivos_comuns:
     if arquivo.endswith('.pdf'):  # Verificar se é um arquivo PDF
         combinar_pdfs(arquivo)
         print(f"Combinado: {arquivo}")
 
+delete_pdf_files(diretorio1, diretorio2)
 print("Todos os PDFs combinados com sucesso!")

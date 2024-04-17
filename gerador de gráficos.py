@@ -199,7 +199,7 @@ def plot_pagos_por_mes_convenio(df, column_date, column_convenio, title, output_
     plt.locator_params(axis="y", integer=True, tight=True) # Ajusta os valores do eixo y para inteiros
     plt.legend(title='Convênio', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
-    plt.savefig(filename, dpi=300)
+    plt.savefig(filename, dpi=400)
     plt.close()
     
 

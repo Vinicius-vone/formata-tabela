@@ -189,17 +189,17 @@ def plot_pagos_por_mes_convenio(df, column_date, column_convenio, title, output_
     # Plotar
     cmap = plt.get_cmap('viridis')
     colors = cmap(np.linspace(0, 1, grouped.shape[1]))
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(19, 7))
     grouped.plot(kind='bar', stacked=False, color=colors)# Usar 'stacked=False' para barras lado a lado
     plt.grid(visible=True, axis='y', alpha=0.6)
-    plt.title(f'{title} - {medico_nome}', wrap=True)
+    plt.title(f'{title} - {medico_nome}', wrap=True, fontsize=16, fontweight='bold', fontname='Helvetica')
     plt.xlabel('Mês')
     plt.ylabel('Quantidade de Pedidos')
     plt.xticks(rotation=45)
     plt.locator_params(axis="y", integer=True, tight=True) # Ajusta os valores do eixo y para inteiros
     plt.legend(title='Convênio', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
-    plt.savefig(filename, dpi=400)
+    plt.savefig(filename, dpi=300)
     plt.close()
     
 

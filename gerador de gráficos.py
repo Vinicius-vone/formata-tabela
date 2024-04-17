@@ -12,7 +12,7 @@ import re
 import matplotlib.pyplot as plt
 from reportlab.platypus import Image
 from matplotlib import colormaps as mpl
-
+import glob
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Padrões de linhas para ignorar
@@ -149,27 +149,10 @@ def generate_pdf(output_file_path, nome_medico, subtitulo, graficos):
 
     doc = SimpleDocTemplate(output_file_path, pagesize=landscape(letter), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=1.5*inch, bottomMargin=1*inch)
     styles = getSampleStyleSheet()
-
-    # Estilo e título principal do documento
-    title_style = styles['Title']
-    title_style.alignment = TA_CENTER
-    titulo = Paragraph(nome_medico, title_style)
-    elements = [titulo]
-
-    subtitulo_style = styles['Title']  # Ou escolha outro estilo conforme necessário
-    subtitulo_style.alignment = TA_CENTER
-    subtitulo_para = Paragraph(subtitulo, subtitulo_style)
-    elements.append(Spacer(1, 12))  # Ajuste o espaço conforme necessário
-    elements.append(subtitulo_para)
+    elements = []
     
     header_style = styles['Heading1']
     header_style.alignment = TA_CENTER
-
-    elements = [
-        Paragraph(nome_medico, styles['Title']),
-        Spacer(1, 12),
-        Paragraph(subtitulo, styles['Title'])
-    ]
 
     # Adicionar gráficos ao documento
     for grafico in graficos:
@@ -216,14 +199,27 @@ def plot_pagos_por_mes_convenio(df, column_date, column_convenio, title, output_
     plt.locator_params(axis="y", integer=True, tight=True) # Ajusta os valores do eixo y para inteiros
     plt.legend(title='Convênio', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
-    plt.savefig(filename)
+    plt.savefig(filename, dpi=400)
     plt.close()
     
 
     return filename
 # Chamadas para função de plotagem
 
-
+def delete_png_files(output_file_path):
+    # Cria o caminho completo para buscar arquivos .png
+    search_path = os.path.join(output_file_path, '*.png')
+    
+    # Usa glob para encontrar todos os arquivos .png no diretório especificado
+    png_files = glob.glob(search_path)
+    
+    # Itera sobre a lista de arquivos .png encontrados e os remove
+    for file_path in png_files:
+        try:
+            os.remove(file_path)
+            print(f"Arquivo {file_path} deletado com sucesso.")
+        except Exception as e:
+            print(f"Erro ao deletar o arquivo {file_path}: {e}")
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, output_directory, subtitulo = selecionar_arquivo_e_diretorio()
@@ -512,4 +508,5 @@ for nome_medico in todos_medicos:
     if graficos:
         generate_pdf(caminho_completo, nome_medico, subtitulo, graficos)
 
+delete_png_files(output_directory)
 mostrar_mensagem()

@@ -9,7 +9,11 @@ import selenium as sl
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
+import os
 
 
 def selecionar_arquivo():
@@ -18,6 +22,13 @@ def selecionar_arquivo():
     root.attributes('-topmost', True)
     path_to_file = filedialog.askopenfilename(title="Selecione o arquivo Excel")
     return path_to_file
+
+def enviar_mensagem(nome, telefone):
+    # Criar a URL
+    url = f"https://wa.me/{telefone}"
+    driver.get(url)
+    time.sleep(10)  # Aguardar o carregamento da página
+
 
 # Caminho do seu arquivo CSV
 caminho_do_arquivo = selecionar_arquivo()
@@ -35,8 +46,27 @@ contatos_df['Telefone'] = '55' + contatos_df['Telefone']
 contatos_df.head(20)
 # Inicializar um dicionário vazio
 dicionario = contatos_df.set_index('Nome')['Telefone'].to_dict()
-
-
-
-
 print(dicionario)
+
+dicionario_teste = {'Vinicius': '5532988083456', 'Faturamento': '5532984475784'}
+
+# Configuração do driver do navegador (ajuste o caminho para o seu chromedriver)
+driver_path = '/path/to/your/chromedriver'
+driver = webdriver.Chrome(driver_path)
+
+periodo_referencia = "10/Out/2023 a 10/Abr/2024"
+mensagem = "Prezado Dr(a). {nome}, segue em anexo o relatório de Honorários Médicos do período de referência compreendido entre {periodo}."
+
+# Função para enviar mensagens
+
+
+# Iterar sobre o dicionário de médicos
+for nome, telefone in dicionario.items():
+    enviar_mensagem(nome, telefone)
+
+driver.quit()  # Fechar o navegador
+
+
+
+
+

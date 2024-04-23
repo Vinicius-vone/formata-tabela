@@ -3,6 +3,7 @@ from tkinter import Tk, filedialog
 import pyautogui as pag
 import os
 import unicodedata
+import pyperclip
 
 
 pag.PAUSE = 1
@@ -34,7 +35,8 @@ def enviar_mensagem(nome, arquivo, mensagem, nome_sem_acentos):
             pag.sleep(3)
             pag.press('enter')
             pag.sleep(2)
-            pag.write(mensagem)
+            pyperclip.copy(mensagem)
+            pag.hotkey('ctrl', 'v')
             pag.sleep(2)
             pag.press('enter')
             pag.sleep(5)
@@ -75,3 +77,6 @@ for nome in nomes:
     arquivo = f"{nome_formatado}_relatorio.pdf"
     mensagem = f"Prezado Dr(a). {nome}, segue em anexo o relatório de Honorários Médicos do período de referência compreendido entre {periodo_referencia}."
     enviar_mensagem(nome, arquivo, mensagem, nome_sem_acentos)
+
+msg = f"Arquivo de {nome} enviado com sucesso!"
+msg

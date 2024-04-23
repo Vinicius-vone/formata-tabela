@@ -42,7 +42,7 @@ def enviar_mensagem(nome, arquivo, mensagem, nome_sem_acentos):
         except Exception as nome:
             return f"Não foi possível enviar o arquivo de {nome}."
     else:
-        return f"O arquivo {arquivo} não foi encontrado na pasta."
+        return f"O arquivo do médico {nome} não foi encontrado na pasta."
 
 # Selecionar o arquivo
 caminho_do_arquivo, diretorio_pdf = selecionar_arquivo()

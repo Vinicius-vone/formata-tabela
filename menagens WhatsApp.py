@@ -26,7 +26,7 @@ def enviar_mensagem(nome, arquivo, mensagem):
             pag.sleep(2)
             pag.click(x=542, y=696)
             pag.sleep(2)
-            pag.locateCenterOnScreen('botao_documento.png')
+            pag.click(botao_documento)
             pag.sleep(2)
             pag.write(arquivo)
             pag.sleep(2)
@@ -63,6 +63,7 @@ print(dicionario)
 nomes = contatos_df['Nome'].tolist()
 
 periodo_referencia = "10 de outubro de 2023 a 10 de abril de 2024"
+botao_documento = pag.locateCenterOnScreen('botao_documento.png')
 
 
 # Iterar sobre a lista de médicos

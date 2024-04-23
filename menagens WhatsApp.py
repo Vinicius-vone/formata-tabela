@@ -26,7 +26,7 @@ def enviar_mensagem(nome, arquivo, mensagem):
             pag.sleep(2)
             pag.click(x=542, y=696)
             pag.sleep(2)
-            pag.click(x=597, y=306)
+            pag.locateCenterOnScreen('botao_documento.png')
             pag.sleep(2)
             pag.write(arquivo)
             pag.sleep(2)

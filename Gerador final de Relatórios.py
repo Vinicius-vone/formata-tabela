@@ -11,7 +11,7 @@ def run_script(script_name):
 
 def main():
     # Lista dos scripts para executar em ordem
-    scripts = ["Formatação de tabelas para PDF - Modelo IV por médico -Completa.py", "gerador de gráficos.py", "Unificador de PDFs.py"]
+    scripts = ["Formatação de tabelas para PDF - Modelo IV por médico -Completa.py", "gerador de gráficos.py", "Unificador de PDFs.py", "Geração tabelas Endoscopia.py"]
     
     # Executar cada script na lista
     for script in scripts:

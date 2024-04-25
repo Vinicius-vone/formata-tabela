@@ -9,6 +9,10 @@ from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT  # Importação necessária para centralizar o texto
 import os
 import re
+import matplotlib.pyplot as plt
+from reportlab.platypus import Image
+from matplotlib import colormaps as mpl
+import glob
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Padrões de linhas para ignorar
@@ -155,7 +159,7 @@ def on_page(canvas, doc):
     
     canvas.restoreState()
 
-def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], data_nao_pagos=[], data_a_faturar = [], data_endo_pagos=[], data_endo_nao_pagos=[]):
+def generate_pdf_table(output_file_path, nome_medico, subtitulo, graficos, data_pagos=[], data_nao_pagos=[], data_a_faturar = [], data_endo_pagos=[], data_endo_nao_pagos=[]):
     # Definindo as cores para as tabelas pagos e não pagos
     cor_cabecalho_pagos = colors.HexColor("#52c569")
     cor_linhas_impar_pagos = colors.HexColor("#86d549")
@@ -250,7 +254,17 @@ def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], 
         elements.append(Paragraph("Endoscopias Faturadas", styles['Heading1']))
         for title, data in data_endo_nao_pagos:
             create_styled_table(title, data, cor_cabecalho_endo_nao_pagos, cor_linhas_impar_endo_nao_pagos, cor_linhas_par_endo_nao_pagos)
-    
+    # Adicionar gráficos ao documento
+    if graficos:
+        for grafico in graficos:
+            if grafico:  # Verifica se o caminho do gráfico foi fornecido
+                try:
+                    img = Image(grafico)
+                    img._restrictSize(8 * inch, 4 * inch)  # Redimensionar a imagem, se necessário
+                    elements.append(img)
+                except Exception as e:
+                    print(f"Erro ao adicionar o gráfico: {e}")
+
     doc.build(elements, onFirstPage=on_page, onLaterPages=on_page)
 
 
@@ -261,6 +275,50 @@ def mostrar_mensagem():
     root.attributes('-topmost', True)
     messagebox.showinfo("Processamento Concluído", f"Tabelas processadas salvas em: {output_directory}")
     root.destroy()
+
+def plot_pagos_por_mes_convenio(df, column_date, column_convenio, title, output_directory, medico_nome):
+    # Trata o nome do médico para criar um nome de arquivo válido
+    medico_nome_tratado = ''.join(e for e in medico_nome if e.isalnum() or e in [' ', '_', '-']).strip().replace(' ', '_')
+    filename = f"{output_directory}/{medico_nome_tratado}_{title.replace(' ', '_')}.png"
+    
+    # Agrupar por mês e convênio
+    df['Mês'] = df[column_date].dt.to_period('M')
+    grouped = df.groupby(['Mês', column_convenio]).size().unstack(fill_value=0)
+    
+    # Plotar
+    cmap = plt.get_cmap('viridis')
+    colors = cmap(np.linspace(0, 1, grouped.shape[1]))
+    plt.figure(figsize=(19, 7))
+    grouped.plot(kind='bar', stacked=False, color=colors)# Usar 'stacked=False' para barras lado a lado
+    plt.grid(visible=True, axis='y', alpha=0.6)
+    plt.title(f'{title} - {medico_nome}', wrap=True, fontsize=16, fontweight='bold', fontname='helvetica')
+    plt.xlabel('Mês')
+    plt.ylabel('Quantidade de Pedidos')
+    plt.xticks(rotation=45)
+    plt.locator_params(axis="y", integer=True, tight=True) # Ajusta os valores do eixo y para inteiros
+    plt.legend(title='Convênio', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.savefig(filename, dpi=400)
+    plt.close()
+    
+
+    return filename
+# Chamadas para função de plotagem
+
+def delete_png_files(output_file_path):
+    # Cria o caminho completo para buscar arquivos .png
+    search_path = os.path.join(output_file_path, '*.png')
+    
+    # Usa glob para encontrar todos os arquivos .png no diretório especificado
+    png_files = glob.glob(search_path)
+    
+    # Itera sobre a lista de arquivos .png encontrados e os remove
+    for file_path in png_files:
+        try:
+            os.remove(file_path)
+            print(f"Arquivo {file_path} deletado com sucesso.")
+        except Exception as e:
+            print(f"Erro ao deletar o arquivo {file_path}: {e}")
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago = selecionar_arquivo_e_diretorio()
@@ -663,6 +721,11 @@ for nome_medico_endo_nao_pagos, grupo in dados_precessados_endo_nao_pagos_df.gro
 
 todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys()) | set(dados_medicos_endo_pagos.keys()) | set(dados_medicos_endo_nao_pagos.keys())
 
+dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'])
+dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'])
+dados_processados_pagos_df['Mês'] = dados_processados_pagos_df['Pago'].dt.to_period('M')
+dados_processados_nao_pagos_df['Mês'] = dados_processados_nao_pagos_df['Data'].dt.to_period('M')
+
 for nome_medico in todos_medicos:
     nome_arquivo = ''.join(e for e in nome_medico if e.isalnum() or e in [' ', '_', '-']).strip()
     caminho_completo = os.path.join(output_directory, f"{nome_arquivo}_relatorio.pdf")
@@ -714,7 +777,23 @@ for nome_medico in todos_medicos:
             tabelas_endo_nao_pagos.append((titulo, dados))
 
     # Chama a função de geração de PDF apenas se houver tabelas para incluir
-    if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar or tabelas_endo_pagos or tabelas_endo_nao_pagos:
-        generate_pdf_table(caminho_completo, titulo_texto, subtitulo, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar, tabelas_endo_pagos, tabelas_endo_nao_pagos)
+    
+    #Função para a criação dos gráficos
+    dados_medico_pagos = dados_processados_pagos_df[dados_processados_pagos_df['Medico'] == nome_medico]
+    dados_medico_nao_pagos = dados_processados_nao_pagos_df[dados_processados_nao_pagos_df['Medico'] == nome_medico]
 
+    graficos = []
+
+    if not dados_medico_pagos.empty:
+        grafico_pagos = plot_pagos_por_mes_convenio(dados_medico_pagos, 'Pago', 'Convenio', 'Pedidos Pagos por Mês e Convênio', output_directory, nome_medico)
+        graficos.append(grafico_pagos)
+
+    if not dados_medico_nao_pagos.empty:
+        grafico_nao_pagos = plot_pagos_por_mes_convenio(dados_medico_nao_pagos, 'Data', 'Convenio', 'Pedidos Não Pagos por Mês e Convênio', output_directory, nome_medico)
+        graficos.append(grafico_nao_pagos)
+
+    if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar or tabelas_endo_pagos or tabelas_endo_nao_pagos or graficos:
+        generate_pdf_table(caminho_completo, titulo_texto, subtitulo, graficos, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar, tabelas_endo_pagos, tabelas_endo_nao_pagos)
+
+delete_png_files(output_directory)
 mostrar_mensagem()

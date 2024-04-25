@@ -40,7 +40,21 @@ ignore_patterns = [
     "|             Total de Registros   =>",
     "|                                                 HOSPITAL NOSSA SENHORA DAS MERCES                                                                            |",
     "| Emitido em:                 Processamento:                C.D.C.: 000000 a 999999               Unidade: 00 a 99 |"
-    "|                                                                                                                                                              |"
+    "|                                                                                                                                                              |",
+    "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
+    "| Sistema de Gestão Hospitalar                                       Fatura de Prestadores de Servico - Analitica - V  ",
+    "| (Valores Faturados)           Com Valores do Filme no Total       Valores do Filme não Somado ao Repasse                                                     |",
+    "|                                                 HOSPITAL NOSSA SENHORA DAS MERCES                                                                            |",
+    "| Emitido em: ",
+    "+--------------------------------------------------------------------------------------------------------------------------------------------------------------+",
+    "| CNPJ: 24.731.747/0001-88 PRACA BARAO DE ITAMBE, 31                Bairro: CENTRO                    Cidade: SAO JOAO DEL REI             Fone: 32 3379-2800  |",
+    "+---------+-+-----------------------------------------+----------+-------------------------------------------+-----+-----+--------+----------+------+----------+"
+    "| Conta   |C| Nome do Paciente                        |Data Atend|Procedimento AMB                           |Qtde |C.H. | Filme  |Vlr. Total|  %Rp |  Valor   |",
+    "+---------+-+-----------------------------------------+----------+-------------------------------------------+-----+-----+--------+----------+------+----------+",
+    "|                                                                                     Valor Total ----->>> ",
+    "|                                            S.P.Data Servico de Processamento de Dados Ltda - Tel.:(31) 3399-2500                                             |",
+    "| (Valores Pagos)               Com Valores do Filme no Total       Valores do Filme não Somado ao Repasse                                                     |"
+
 ]
 
 def line_should_be_ignored(line):
@@ -92,9 +106,11 @@ def selecionar_arquivo_e_diretorio():
     path_to_file_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_nao_pagos = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos não pagos", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_a_faturar = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos a faturar", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file_endo_pago = filedialog.askopenfilename(title="Selecione o arquivo de texto das endoscopias pagas", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file_endo_nao_pago = filedialog.askopenfilename(title="Selecione o arquivo de texto das endoscopias não pagas", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     subtitulo = simpledialog.askstring("Subtítulo", "Digite o subtítulo do documento:", parent=root)
     root.destroy()
-    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo
+    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago
 
 def on_page(canvas, doc):
     canvas.saveState()
@@ -139,7 +155,7 @@ def on_page(canvas, doc):
     
     canvas.restoreState()
 
-def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], data_nao_pagos=[], data_a_faturar = []):
+def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], data_nao_pagos=[], data_a_faturar = [], data_endo_pagos=[], data_endo_nao_pagos=[]):
     # Definindo as cores para as tabelas pagos e não pagos
     cor_cabecalho_pagos = colors.HexColor("#52c569")
     cor_linhas_impar_pagos = colors.HexColor("#86d549")
@@ -152,6 +168,14 @@ def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], 
     cor_cabecalho_a_faturar = colors.HexColor("#fa7d5e")
     cor_linhas_impar_a_faturar = colors.HexColor("#fed395")
     cor_linhas_par_a_faturar = colors.HexColor("#fcfdbf")
+
+    cor_cabecalho_endo_pagos = colors.HexColor("#3f4788")
+    cor_linhas_impar_endo_pagos = colors.HexColor("#9B9BD0")
+    cor_linhas_par_endo_pagos = colors.HexColor("#C8C8FF")
+    
+    cor_cabecalho_endo_nao_pagos = colors.HexColor("#fc9f07")
+    cor_linhas_impar_endo_nao_pagos = colors.HexColor("#fac228")
+    cor_linhas_par_endo_nao_pagos = colors.HexColor("#f3e55d")
 
     doc = SimpleDocTemplate(output_file_path, pagesize=landscape(letter), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=1.5*inch, bottomMargin=1*inch)
     styles = getSampleStyleSheet()
@@ -214,6 +238,18 @@ def generate_pdf_table(output_file_path, nome_medico, subtitulo, data_pagos=[], 
         elements.append(Paragraph("Procedimentos a Faturar", styles['Heading1']))
         for title, data in data_a_faturar:
             create_styled_table(title, data, cor_cabecalho_a_faturar, cor_linhas_impar_a_faturar, cor_linhas_par_a_faturar)
+    if data_a_faturar and data_endo_pagos:
+        elements.append(PageBreak())
+    if data_endo_pagos:
+        elements.append(Paragraph("Endoscopias Pagas", styles['Heading1']))
+        for title, data in data_endo_pagos:
+            create_styled_table(title, data, cor_cabecalho_endo_pagos, cor_linhas_impar_endo_pagos, cor_linhas_par_endo_pagos)
+    if data_endo_pagos and data_endo_nao_pagos:
+        elements.append(PageBreak())
+    if data_endo_nao_pagos:
+        elements.append(Paragraph("Endoscopias Faturadas", styles['Heading1']))
+        for title, data in data_endo_nao_pagos:
+            create_styled_table(title, data, cor_cabecalho_endo_nao_pagos, cor_linhas_impar_endo_nao_pagos, cor_linhas_par_endo_nao_pagos)
     
     doc.build(elements, onFirstPage=on_page, onLaterPages=on_page)
 
@@ -227,13 +263,15 @@ def mostrar_mensagem():
     root.destroy()
 
 
-path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo = selecionar_arquivo_e_diretorio()
-output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Tabelas Médicos"
+path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago = selecionar_arquivo_e_diretorio()
+output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Relatórios Médicos/10-10-23_10-04-24 - teste"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
 lines_list_nao_pagos = read_file_to_list(path_to_file_nao_pagos)
 lines_list_a_faturar = read_file_to_list(path_to_file_a_faturar)
+lines_list_endo_pago = read_file_to_list(path_to_file_endo_pago)
+lines_list_endo_nao_pago = read_file_to_list(path_to_file_endo_nao_pago)
 
 # Dividir cada linha pela barra vertical '|' e remover espaços vazios das strings resultantes
 data_pagos = [line.split('|') for line in lines_list_pagos]
@@ -248,11 +286,20 @@ data_a_faturar = [line.split('|') for line in lines_list_a_faturar]
 # Remover espaços vazios em cada elemento da lista
 data_a_faturar = [[item.strip() for item in row] for row in data_a_faturar]
 
+data_endo_pagos = [line.split('|') for line in lines_list_endo_pago]
+# Remover espaços vazios em cada elemento da lista
+data_endo_pagos = [[item.strip() for item in row] for row in data_endo_pagos]
+
+data_endo_nao_pagos = [line.split('|') for line in lines_list_endo_nao_pago]
+# Remover espaços vazios em cada elemento da lista
+data_endo_nao_pagos = [[item.strip() for item in row] for row in data_endo_nao_pagos]
 
 # Criar DataFrame
 dados_crua_inicial_pagos = pd.DataFrame(data_pagos)
 dados_crua_inicial_nao_pagos = pd.DataFrame(data_nao_pagos)
 dados_crua_inicial_a_faturar = pd.DataFrame(data_a_faturar)
+dados_crua_inicial_endo_pagos = pd.DataFrame(data_endo_pagos)
+dados_crua_inicial_endo_nao_pagos = pd.DataFrame(data_endo_nao_pagos)
 
 # Substitui strings vazias por NaN para identificar corretamente campos vazios
 dados_crua_inicial_pagos.replace('', pd.NA, inplace=True)
@@ -283,6 +330,23 @@ dados_crua_inicial_a_faturar.reset_index(drop=True, inplace=True)
 dados_crua_inicial_a_faturar.columns = ['Nome do Paciente', 'Registro', 'Atendimento', 'Alta', 'Convenio']
 dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Emitido em:", na=False)]
 dados_crua_inicial_a_faturar['Convenio'] = dados_crua_inicial_a_faturar['Convenio'].str.replace('^\d+-', '', regex=True)
+
+# Substitui strings vazias por NaN para identificar corretamente campos vazios
+dados_crua_inicial_endo_pagos.replace('', pd.NA, inplace=True)
+# Remove linhas onde todos os campos estão vazios
+dados_crua_inicial_endo_pagos.dropna(how='all', inplace=True)
+dados_crua_inicial_endo_pagos = dados_crua_inicial_endo_pagos.drop(dados_crua_inicial_endo_pagos.columns[[0, 2, 6, 7, 8, 9, 10, 12]], axis=1)
+dados_crua_inicial_endo_pagos.reset_index(drop=True, inplace=True)
+dados_crua_inicial_endo_pagos.columns = ['Conta', 'Paciente', 'Data Atend.', 'Procedimento', 'Valor']
+
+
+dados_crua_inicial_endo_nao_pagos.replace('', pd.NA, inplace=True)
+# Remove linhas onde todos os campos estão vazios
+dados_crua_inicial_endo_nao_pagos.dropna(how='all', inplace=True)
+dados_crua_inicial_endo_nao_pagos = dados_crua_inicial_endo_nao_pagos.drop(dados_crua_inicial_endo_nao_pagos.columns[[0, 2, 6, 7, 8, 9, 10, 12]], axis=1)
+dados_crua_inicial_endo_nao_pagos.reset_index(drop=True, inplace=True)
+dados_crua_inicial_endo_nao_pagos.columns = ['Conta', 'Paciente', 'Data Atend.', 'Procedimento', 'Valor']
+
 #Dicionário com os nomes corretos para os convenios
 dicionario_convenios = {
     'BANCO DO BRASIL':"Banco do Brasil", 'POLICIA MILITAR':"Polícia Militar", 'CEMIG SAUDE':"CEMIG", 'FUSEX':"FUSEX",
@@ -298,7 +362,8 @@ dicionario_convenios = {
     "AECO-ASSOCIACAO DOS EMPREGADOS":"AECO", "CONSORCIO INTERMUNICI":"Cisver", "GV CLINICAS MEDICINA":"GV", "SUL AMERICA AETNA SEG":"Sul América", 
     "SAUDE BRADESCO EMPRES":"Bradesco Emp", "CAIXA ECONOMICA FEDER":"Caixa Econômica", "FUNDACAO LIBERTAS (PR":"Previminas", "ALBERGUE SANTO ANTONI":"Albergue S. Antônio",
     "SAUDE BRADESCO INDIVI":"Bradesco Ind", "ECT (EMP. BRAS. DE CO":"ECT", "PROASERV":"Proaserv", "CASU - CAIXA DE ASSIS":"CASU", "SASC - SANTA CASA SAU":"SASC",
-    "USISAUDE (FUNDAÇAO SA":"Usisaude", "AECO-ASSOCIACAO DOS E":"AECO", "SABIN SINAI VITA ASSI":"SABIN"
+    "USISAUDE (FUNDAÇAO SA":"Usisaude", "AECO-ASSOCIACAO DOS E":"AECO", "SABIN SINAI VITA ASSI":"SABIN", "CONSORCIO INTERMUNICIPAL DE SAUDE":"Cisver", "SASC - SANTA CASA SAUDE COMPLEMENT":"SASC",
+    "ECT (EMP. BRAS. DE CORREIOS E TELE":"ECT"
     }
 
 
@@ -309,9 +374,15 @@ medico_atual_nao_pagos = ''
 medico_atual_a_faturar = ''
 convenio_atual_pagos = ''
 convenio_atual_nao_pagos = ''
+medico_atual_endo_pagos = ''
+medico_atual_endo_nao_pagos = ''
+convenio_atual_endo_pagos = ''
+convenio_atual_endo_nao_pagos = ''
 dados_processados_pagos = []
 dados_processados_nao_pagos = []
 dados_processados_a_faturar = []
+dados_processados_endo_pagos =[]
+dados_precessados_endo_nao_pagos = []
 
 
 #Cria as tabelas a partir dos dados obtidos de cada arquivo txt, incluindo p médico e o convênio em cada linha de forma interativa
@@ -355,6 +426,38 @@ for index, linha in dados_crua_inicial_a_faturar.iterrows():
             **linha.to_dict(), # Mantém todas as colunas originais
             'Medico': medico_atual_a_faturar
         })
+
+for index, linha in dados_crua_inicial_endo_pagos.iterrows():
+    registro = str(linha['Conta']).strip()
+    if "Convenio.:" in registro:
+        convenio_atual_endo_pagos = " ".join(registro.split()[3:])
+        convenio_atual_endo_pagos = dicionario_convenios.get(convenio_atual_endo_pagos, convenio_atual_endo_pagos)
+    elif "Laboratorio:" in registro:
+        medico_atual_endo_pagos = " ".join(registro.split()[1:])
+        medico_atual_endo_pagos = medico_atual_endo_pagos.replace(" Exame de Endoscopia Digestiva", "")
+    else:
+        # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
+        dados_processados_endo_pagos.append({
+            **linha.to_dict(), # Mantém todas as colunas originais
+            'Medico': medico_atual_endo_pagos,
+            'Convenio': convenio_atual_endo_pagos
+        })
+
+for index, linha in dados_crua_inicial_endo_nao_pagos.iterrows():
+    registro = str(linha['Conta']).strip()
+    if "Convenio.:" in registro:
+        convenio_atual_endo_nao_pagos = " ".join(registro.split()[3:])
+        convenio_atual_endo_nao_pagos = dicionario_convenios.get(convenio_atual_endo_nao_pagos, convenio_atual_endo_nao_pagos)
+    elif "Laboratorio:" in registro:
+        medico_atual_endo_nao_pagos = " ".join(registro.split()[1:])
+        medico_atual_endo_nao_pagos = medico_atual_endo_nao_pagos.replace(" Exame de Endoscopia Digestiva", "")
+    else:
+        # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
+        dados_precessados_endo_nao_pagos.append({
+            **linha.to_dict(), # Mantém todas as colunas originais
+            'Medico': medico_atual_endo_nao_pagos,
+            'Convenio': convenio_atual_endo_nao_pagos
+        })
 #Criando os dataframes a parti da tabela gerada pelo código de inclusão de médicos e fazendo o ffill para completar os valores faltantes
 dados_processados_pagos = pd.DataFrame(dados_processados_pagos)
 dados_processados_pagos_final = dados_processados_pagos.ffill()
@@ -372,6 +475,14 @@ dados_processados_pagos_df = pd.DataFrame(dados_processados_pagos_final)
 dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)
 dados_processados_a_faturar_df = pd.DataFrame(dados_processados_a_faturar_final)
 
+dados_processados_endo_pagos = pd.DataFrame(dados_processados_endo_pagos)
+dados_processados_endo_pagos_final = dados_processados_endo_pagos.ffill()
+dados_processados_endo_pagos_df = pd.DataFrame(dados_processados_endo_pagos_final)
+
+
+dados_precessados_endo_nao_pagos = pd.DataFrame(dados_precessados_endo_nao_pagos)
+dados_precessados_endo_nao_pagos_final = dados_precessados_endo_nao_pagos.ffill()
+dados_precessados_endo_nao_pagos_df = pd.DataFrame(dados_precessados_endo_nao_pagos_final)
 
 #Ajustando as datas e os formatos de Data
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
@@ -386,17 +497,32 @@ dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_fatu
 dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento'], errors='coerce', format='%d/%m/%Y')
 dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_faturar_df['Alta']).dt.strftime('%d/%m/%Y')
 dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento']).dt.strftime('%d/%m/%Y')
+dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(dados_processados_endo_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y')
+dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(dados_precessados_endo_nao_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y')
+dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(dados_processados_endo_pagos_df['Data Atend.']).dt.strftime('%d/%m/%Y')
+dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(dados_precessados_endo_nao_pagos_df['Data Atend.']).dt.strftime('%d/%m/%Y')
 
 
 #Retirando as linhas que contêm a palavra "Serv. Profissionais"
 dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
+retirar_palavras = ["Total Convenio", "V. Recebido", "Valor Geral", "Conta"]
+for palavra in retirar_palavras:
+    dados_processados_endo_pagos_df = dados_processados_endo_pagos_df[~dados_processados_endo_pagos_df['Conta'].str.contains(palavra, na=False)]
+    dados_precessados_endo_nao_pagos_df = dados_precessados_endo_nao_pagos_df[~dados_precessados_endo_nao_pagos_df['Conta'].str.contains(palavra, na=False)]
+
+
+id_dados_processados_endo_pagos_df = dados_processados_endo_pagos_df['Conta'].unique()
+# Filtrando o dataframe df_faturados para remover os procedimentos já pagos
+dados_precessados_endo_nao_pagos_df = dados_precessados_endo_nao_pagos_df[~dados_precessados_endo_nao_pagos_df['Conta'].isin(id_dados_processados_endo_pagos_df)]
 
 
 #Criação dos dicionários para cada médico
 dados_medicos_pagos = {}
 dados_medicos_nao_pagos = {}
 dados_medicos_a_faturar = {}
+dados_medicos_endo_pagos = {}
+dados_medicos_endo_nao_pagos = {}
 
 #Preparação dos dados por médico para os pedidos não pagos
 for nome_medico_nao_pagos, grupo in dados_processados_nao_pagos_df.groupby("Medico"):
@@ -484,7 +610,58 @@ for nome_medico_a_faturar, grupo in dados_processados_a_faturar_df.groupby("Medi
     #Lista final para a construção das tabelas
     dados_medicos_a_faturar[nome_medico_a_faturar] = [dados_pdf_a_faturar, dados_pdf_contagem_convenio_a_faturar, dados_pdf_contagem_total]
 
-todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys())
+for nome_medico_endo_pagos, grupo in dados_processados_endo_pagos_df.groupby("Medico"):
+    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
+    grupo_sem_medico = grupo.drop('Medico', axis=1)
+    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(valor_para_float)
+    # Agrupar por convênio e somar valores
+    soma_por_convenio = grupo_sem_medico.groupby('Convenio')["Valor"].sum().reset_index()
+    #Gerando a soma total para cada uma das colunas
+    total_faturado = grupo_sem_medico['Valor'].sum()
+    # Formatar as colunas de valores para o formato de moeda
+    soma_por_convenio["Valor"] = soma_por_convenio["Valor"].apply(formatar_valor)
+    total_faturado_formatado = formatar_valor(total_faturado)
+    # Preparar dados para terceira tabela
+    totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Valor"].sum().reset_index()
+    totais_por_paciente["Valor"] = totais_por_paciente["Valor"].apply(formatar_valor)
+    # Preparar dados para a primeira tabela
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(formatar_valor)
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    dados_pagos_soma_total = [["Valor"], [total_faturado_formatado]]
+    dados_pdf_endo_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
+    dados_pdf_endo_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
+    dados_pdf_endo_pagos_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
+    #Lista final para a construção das tabelas
+    dados_medicos_endo_pagos[nome_medico_endo_pagos] = [dados_pagos_soma_total, dados_pdf_endo_pagos, dados_pdf_endo_pagos_soma_conv, dados_pdf_endo_pagos_paciente]
+
+for nome_medico_endo_nao_pagos, grupo in dados_precessados_endo_nao_pagos_df.groupby("Medico"):
+    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
+    grupo_sem_medico = grupo.drop('Medico', axis=1)
+    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(valor_para_float)
+    # Agrupar por convênio e somar valores
+    soma_por_convenio = grupo_sem_medico.groupby('Convenio')["Valor"].sum().reset_index()
+    #Gerando a soma total para cada uma das colunas
+    total_faturado = grupo_sem_medico['Valor'].sum()
+    # Formatar as colunas de valores para o formato de moeda
+    soma_por_convenio["Valor"] = soma_por_convenio["Valor"].apply(formatar_valor)
+    total_faturado_formatado = formatar_valor(total_faturado)
+    # Preparar dados para terceira tabela
+    totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Valor"].sum().reset_index()
+    totais_por_paciente["Valor"] = totais_por_paciente["Valor"].apply(formatar_valor)
+    # Preparar dados para a primeira tabela
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(formatar_valor)
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    dados_nao_pagos_soma_total = [["Valor"], [total_faturado_formatado]]
+    dados_pdf_endo_nao_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
+    dados_pdf_endo_nao_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
+    dados_pdf_endo_nao_pagos_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
+    #Lista final para a construção das tabelas
+    dados_medicos_endo_nao_pagos[nome_medico_endo_nao_pagos] = [dados_nao_pagos_soma_total, dados_pdf_endo_nao_pagos, dados_pdf_endo_nao_pagos_soma_conv, dados_pdf_endo_nao_pagos_paciente]
+
+
+todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys()) | set(dados_medicos_endo_pagos.keys()) | set(dados_medicos_endo_nao_pagos.keys())
 
 for nome_medico in todos_medicos:
     nome_arquivo = ''.join(e for e in nome_medico if e.isalnum() or e in [' ', '_', '-']).strip()
@@ -495,6 +672,8 @@ for nome_medico in todos_medicos:
     tabelas_pagos = []
     tabelas_nao_pagos = []
     tabelas_a_faturar = []
+    tabelas_endo_pagos = []
+    tabelas_endo_nao_pagos = []
 
     # Verifica se o médico está presente nos dados pagos e adiciona as tabelas correspondentes
     if nome_medico in dados_medicos_pagos:
@@ -518,8 +697,24 @@ for nome_medico in todos_medicos:
                                 ("Número total de procedimentos a faturar", dados_medicos_a_faturar[nome_medico][2])]:
             tabelas_a_faturar.append((titulo, dados))
 
+        # Verifica se o médico está presente nos dados pagos e adiciona as tabelas correspondentes
+    if nome_medico in dados_medicos_endo_pagos:
+        for titulo, dados in [("Valores por procedimento", dados_medicos_endo_pagos[nome_medico][1]),
+                              ("Totais por Convênio", dados_medicos_endo_pagos[nome_medico][2]),
+                              ("Totais por Paciente", dados_medicos_endo_pagos[nome_medico][3]),
+                              ("Soma Total", dados_medicos_endo_pagos[nome_medico][0])]:
+            tabelas_endo_pagos.append((titulo, dados))
+
+    # Verifica se o médico está presente nos dados não pagos e adiciona as tabelas correspondentes
+    if nome_medico in dados_medicos_endo_nao_pagos:
+        for titulo, dados in [("Valores por procedimento", dados_medicos_endo_nao_pagos[nome_medico][1]),
+                              ("Totais por Convênio", dados_medicos_endo_nao_pagos[nome_medico][2]),
+                              ("Totais por Paciente", dados_medicos_endo_nao_pagos[nome_medico][3]),
+                              ("Soma Total", dados_medicos_endo_nao_pagos[nome_medico][0])]:
+            tabelas_endo_nao_pagos.append((titulo, dados))
+
     # Chama a função de geração de PDF apenas se houver tabelas para incluir
-    if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar:
-        generate_pdf_table(caminho_completo, titulo_texto, subtitulo, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar)
+    if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar or tabelas_endo_pagos or tabelas_endo_nao_pagos:
+        generate_pdf_table(caminho_completo, titulo_texto, subtitulo, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar, tabelas_endo_pagos, tabelas_endo_nao_pagos)
 
 mostrar_mensagem()

@@ -6,12 +6,10 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT  # Importação necessária para centralizar o texto
+from reportlab.lib.enums import TA_CENTER  # Importação necessária para centralizar o texto
 import os
 import re
 import matplotlib.pyplot as plt
-from reportlab.platypus import Image
-from matplotlib import colormaps as mpl
 import glob
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
@@ -721,6 +719,7 @@ for nome_medico_endo_nao_pagos, grupo in dados_precessados_endo_nao_pagos_df.gro
 
 todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys()) | set(dados_medicos_endo_pagos.keys()) | set(dados_medicos_endo_nao_pagos.keys())
 
+#Ajusdtando as datas e os formatos de Data para a geração dos gráficos
 dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'])
 dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'])
 dados_processados_pagos_df['Mês'] = dados_processados_pagos_df['Pago'].dt.to_period('M')
@@ -776,7 +775,6 @@ for nome_medico in todos_medicos:
                               ("Soma Total", dados_medicos_endo_nao_pagos[nome_medico][0])]:
             tabelas_endo_nao_pagos.append((titulo, dados))
 
-    # Chama a função de geração de PDF apenas se houver tabelas para incluir
     
     #Função para a criação dos gráficos
     dados_medico_pagos = dados_processados_pagos_df[dados_processados_pagos_df['Medico'] == nome_medico]
@@ -792,6 +790,7 @@ for nome_medico in todos_medicos:
         grafico_nao_pagos = plot_pagos_por_mes_convenio(dados_medico_nao_pagos, 'Data', 'Convenio', 'Pedidos Não Pagos por Mês e Convênio', output_directory, nome_medico)
         graficos.append(grafico_nao_pagos)
 
+    # Chama a função de geração de PDF apenas se houver tabelas para incluir
     if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar or tabelas_endo_pagos or tabelas_endo_nao_pagos or graficos:
         generate_pdf_table(caminho_completo, titulo_texto, subtitulo, graficos, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar, tabelas_endo_pagos, tabelas_endo_nao_pagos)
 

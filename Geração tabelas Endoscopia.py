@@ -1,6 +1,3 @@
-
-
-
 import pandas as pd
 import numpy as np
 from tkinter import Tk, filedialog, simpledialog, messagebox
@@ -225,7 +222,7 @@ def mostrar_mensagem():
     messagebox.showinfo("Processamento Concluído", f"Tabelas processadas salvas em: {output_directory}")
     root.destroy()
 
-path_to_file_endo_pago, path_to_file_endo_nao_pago, subtitulo = selecionar_arquivo_e_diretorio()
+path_to_file_endo_pago, path_to_file_endo_nao_pago, subtitulo= selecionar_arquivo_e_diretorio()
 output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Tabelas Endoscopia"
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA

@@ -41,10 +41,11 @@ def combinar_pdfs(nome_arquivo):
         for pagina in reader.pages:
             writer.add_page(pagina)
             
-    with open(os.path.join(diretorio3, nome_arquivo), 'rb') as f:
-        reader = PdfReader(f)
-        for pagina in reader.pages:
-            writer.add_page(pagina)
+    if nome_arquivo in arquivos3:
+        with open(os.path.join(diretorio3, nome_arquivo), 'rb') as f:
+            reader = PdfReader(f)
+            for pagina in reader.pages:
+                writer.add_page(pagina)
 
     # Salvar o PDF combinado
     with open(os.path.join(diretorio_final, nome_arquivo), 'wb') as f:

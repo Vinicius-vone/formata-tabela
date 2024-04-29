@@ -30,18 +30,23 @@ with open(file_path, 'r', encoding='ISO-8859-1') as file:
             continue  # Pular para a próxima iteração depois de atualizar o médico
         pattern = r"(\d{8})\s+([A-Z\s]+)\s+(\d{2}\.\d{2}\.\d{2}\.\d{3}-\d)\s+(\d{2}/\d{2}/\d{4})\s+(\w+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+(?:\s+\(\d+,\d+%\)))"
         match = re.match(pattern, line.strip())
-            # Regex detalhada para capturar todos os campos
-            # Regex to extract each part of the line
-            # pattern = (r"(\d{8})\s+"  # Account number: 8 digits
-            #         r"([A-Z\z]+)\s+"  # Patient name: All caps and spaces
-            #         r"(\d{2}\.\d{2}\.\d{2}\.\d{3}-\d)\s+"  # Procto: Specific pattern
-            #         r"(\d{2}/\d{2}/\d{4})\s+"  # Date: DD/MM/YYYY
-            #         r"(\w+)\s+"  # Ato: Word characters
-            #         r"([\d,]+)\s+"  # Vlr. Hosp.: Decimal number with comma
-            #         r"([\d,]+)\s+"  # Vlr. Medico: Decimal number with comma
-            #         r"([\d,]+)\s+"  # Valor: Decimal number with comma
-            #         r"([\d,]+(?:\s+\(\d+,\d+%\)))")  # Repasse: Decimal number with percentage
-
+        #     r"(\d{8})"           # (\d{8}): Matches exactly 8 digits, captures the "Conta" (Account number).
+        #     r"\s+"               # \s+: Matches one or more whitespace characters, used as a separator.
+        #     r"([A-Z\s]+?)"       # ([A-Z\s]+?): Matches a sequence of uppercase letters and spaces, non-greedy; captures "Paciente" (Patient name).
+        #     r"\s+"               # Separator.
+        #     r"(\d{2}\.\d{2}\.\d{2}\.\d{3}-\d)"  # Matches a specific pattern like '03.01.01.004-8', captures "Procto" (Procedure code).
+        #     r"\s+"               # Separator.
+        #     r"(\d{2}/\d{2}/\d{4})"  # Matches dates in the format DD/MM/YYYY, captures "Data" (Date).
+        #     r"\s+"               # Separator.
+        #     r"(\w+)"             # (\w+): Matches one or more word characters (letters, digits, underscore), captures "Ato" (Action/Procedure type).
+        #     r"\s+"               # Separator.
+        #     r"([\d,]+)"          # ([\d,]+): Matches a sequence of digits or commas, captures "Vlr. Hosp." (Hospital Value).
+        #     r"\s+"               # Separator.
+        #     r"([\d,]+)"          # Matches a sequence of digits or commas, captures "Vlr. Medico" (Doctor's Fee).
+        #     r"\s+"               # Separator.
+        #     r"([\d,]+)"          # Matches a sequence of digits or commas, captures "Valor" (Total Value).
+        #     r"\s+"               # Separator.
+        #     r"([\d,]+(?:\s+\(\d+,\d+%?\)))"  # Complex pattern for "Repasse": includes digits, commas, and optionally a percentage in parentheses.
         if match:
                 data = {
                     "Conta": match.group(1),

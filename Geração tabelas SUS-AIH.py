@@ -47,4 +47,4 @@ with open(file_path, 'r', encoding='ISO-8859-1') as file:
 df = pd.DataFrame(data, columns=['AIH', 'Paciente', 'Procedimento', 'Internação', 'Alta', 'Ato', 'Quantidade', 'Pontos', 'Valor', 'Valor Repassado', 'Médico'])
 
 # Exibir as primeiras linhas do DataFrame
-print(df.head(20))
+print(df.head(60))

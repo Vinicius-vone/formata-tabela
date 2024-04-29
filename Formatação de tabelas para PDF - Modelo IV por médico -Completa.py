@@ -110,9 +110,11 @@ def selecionar_arquivo_e_diretorio():
     path_to_file_a_faturar = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos a faturar", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_endo_pago = filedialog.askopenfilename(title="Selecione o arquivo de texto das endoscopias pagas", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_endo_nao_pago = filedialog.askopenfilename(title="Selecione o arquivo de texto das endoscopias não pagas", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file_sus_aih = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos SUS AIH", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+    path_to_file_sus_ambulatorio = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos SUS Ambulatorio", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     subtitulo = simpledialog.askstring("Subtítulo", "Digite o subtítulo do documento:", parent=root)
     root.destroy()
-    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago
+    return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio
 
 def on_page(canvas, doc):
     canvas.saveState()
@@ -157,7 +159,7 @@ def on_page(canvas, doc):
     
     canvas.restoreState()
 
-def generate_pdf_table(output_file_path, nome_medico, subtitulo, graficos, data_pagos=[], data_nao_pagos=[], data_a_faturar = [], data_endo_pagos=[], data_endo_nao_pagos=[]):
+def generate_pdf_table(output_file_path, nome_medico, subtitulo, graficos, data_pagos=[], data_nao_pagos=[], data_a_faturar = [], data_endo_pagos=[], data_endo_nao_pagos=[], data_sus_aih = [], data_sus_ambulatorio = []):
     # Definindo as cores para as tabelas pagos e não pagos
     cor_cabecalho_pagos = colors.HexColor("#52c569")
     cor_linhas_impar_pagos = colors.HexColor("#86d549")
@@ -178,6 +180,14 @@ def generate_pdf_table(output_file_path, nome_medico, subtitulo, graficos, data_
     cor_cabecalho_endo_nao_pagos = colors.HexColor("#fc9f07")
     cor_linhas_impar_endo_nao_pagos = colors.HexColor("#fac228")
     cor_linhas_par_endo_nao_pagos = colors.HexColor("#f3e55d")
+
+    cor_cabecalho_sus_aih = colors.HexColor("#7096C4")
+    cor_linhas_impar_sus_aih = colors.HexColor("#92C4FF")
+    cor_linhas_par_sus_aih = colors.HexColor("#79A3D4")
+
+    cor_cabecalho_sus_ambulatorio = colors.HexColor("#7277AB")
+    cor_linhas_impar_sus_ambulatorio = colors.HexColor("#ABAFFF")
+    cor_linhas_par_sus_ambulatorio = colors.HexColor("#7D82BA")
 
     doc = SimpleDocTemplate(output_file_path, pagesize=landscape(letter), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=1.5*inch, bottomMargin=1*inch)
     styles = getSampleStyleSheet()
@@ -234,7 +244,7 @@ def generate_pdf_table(output_file_path, nome_medico, subtitulo, graficos, data_
         elements.append(Paragraph("Valores Faturados", styles['Heading1']))
         for title, data in data_nao_pagos:
             create_styled_table(title, data, cor_cabecalho_nao_pagos, cor_linhas_impar_nao_pagos, cor_linhas_par_nao_pagos)
-    if data_nao_pagos and data_a_faturar:
+    if data_nao_pagos and data_a_faturar or data_nao_pagos and graficos:
         elements.append(PageBreak())
     if data_a_faturar:
         elements.append(Paragraph("Procedimentos a Faturar", styles['Heading1']))
@@ -252,6 +262,20 @@ def generate_pdf_table(output_file_path, nome_medico, subtitulo, graficos, data_
         elements.append(Paragraph("Endoscopias Faturadas", styles['Heading1']))
         for title, data in data_endo_nao_pagos:
             create_styled_table(title, data, cor_cabecalho_endo_nao_pagos, cor_linhas_impar_endo_nao_pagos, cor_linhas_par_endo_nao_pagos)
+    if data_endo_nao_pagos and data_sus_aih or data_a_faturar and data_sus_aih:
+        elements.append(PageBreak())
+    if data_sus_aih:
+        elements.append(Paragraph("SUS AIH", styles['Heading1']))
+        for title, data in data_sus_aih:
+            create_styled_table(title, data, cor_cabecalho_sus_aih, cor_linhas_impar_sus_aih, cor_linhas_par_sus_aih)
+    if data_sus_aih and data_sus_ambulatorio:
+        elements.append(PageBreak())
+    if data_sus_ambulatorio:
+        elements.append(Paragraph("SUS Ambulatorio", styles['Heading1']))
+        for title, data in data_sus_ambulatorio:
+            create_styled_table(title, data, cor_cabecalho_sus_ambulatorio, cor_linhas_impar_sus_ambulatorio, cor_linhas_par_sus_ambulatorio)
+    if data_sus_ambulatorio and graficos:
+        elements.append(PageBreak())
     # Adicionar gráficos ao documento
     if graficos:
         for grafico in graficos:
@@ -289,7 +313,7 @@ def plot_pagos_por_mes_convenio(df, column_date, column_convenio, title, output_
     plt.figure(figsize=(19, 7))
     grouped.plot(kind='bar', stacked=False, color=colors)# Usar 'stacked=False' para barras lado a lado
     plt.grid(visible=True, axis='y', alpha=0.6)
-    plt.title(f'{title} - {medico_nome}', wrap=True, fontsize=16, fontweight='bold', fontname='helvetica')
+    plt.title(f'{title} - {medico_nome}', wrap=True, fontsize=16, fontweight='bold')
     plt.xlabel('Mês')
     plt.ylabel('Quantidade de Pedidos')
     plt.xticks(rotation=45)
@@ -319,7 +343,111 @@ def delete_png_files(output_file_path):
             print(f"Erro ao deletar o arquivo {file_path}: {e}")
 
 
-path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago = selecionar_arquivo_e_diretorio()
+def dados_sus_aih(file_path):
+    file_path = path_to_file_sus_aih
+    ignore_text = ['189-HOSPITAL NOSSA SENHORA DAS MERCES', "Sistema de Gerenciamento Hospitalar", "Complexidade"]  # Texto a ser ignorado
+    # Lista para armazenar os dados
+    data = []
+    # Abrir e ler o arquivo de textoS
+    with open(file_path, 'r', encoding='ISO-8859-1') as file:
+        current_doctor = None  # Inicializar a variável do médico aqui
+        for line in file:
+            if any(text in line for text in ignore_text):
+                continue  # Ignorar a linha
+            # Atualizar o nome do médico quando uma nova linha de médico for encontrada
+            if 'CPF:' in line:
+                current_doctor = line.split('CPF:')[0].strip()
+                continue  # Pular para a próxima iteração depois de atualizar o médico
+
+            # Processar linhas de dados
+            if line.strip() and line[0].isdigit():
+                # Regex detalhada para capturar todos os campos
+                regex = r"(\d+) ([\w\s]+?) +(\d{10}) ([\w\s]+?) (\d{2}/\d{2}/\d{4}) (\d{2}/\d{2}/\d{4}) ([\w-]+) +(\d+) +(\d+) +(\d+,\d+) +(\d+,\d+)"
+                match = re.match(regex, line)
+                if match:
+                    groups = match.groups()
+                    aih = groups[0]
+                    paciente = groups[1]
+                    codigo_procedimento = groups[2]
+                    descricao_procedimento = groups[3]
+                    procedimento = f"{codigo_procedimento} {descricao_procedimento}"
+                    internacao = groups[4]
+                    alta = groups[5]
+                    ato = groups[6]
+                    quantidade = groups[7]
+                    pontos = groups[8]
+                    valor = groups[9]
+                    valor_repassado = groups[10]
+                    
+                    # Adicionar linha ao conjunto de dados
+                    data.append([aih, paciente, procedimento, internacao, alta, ato, quantidade, valor, current_doctor])
+
+    # Criar DataFrame
+    return pd.DataFrame(data, columns=['AIH', 'Paciente', 'Procedimento', 'Internação', 'Alta', 'Ato', 'Quantidade', 'Valor', 'Medico'])
+
+def dados_sus_ambulatorio(file_path):
+    def extract_doctor_name(text):
+        clean_text = text.split('CPF/CGC:')[0].strip()
+        # Regex pattern to find "CRM/CRO:" followed by space and digits
+        pattern = r"CRM/CRO:\s+\d+\s+"
+        # Using re.sub to replace the matched pattern with an empty string
+        clean_text = re.sub(pattern, '', clean_text)
+        return clean_text
+
+    # Caminho para o arquivo de texto
+    file_path = path_to_file_sus_ambulatorio
+    ignore_text = ['189 HOSPITAL NOSSA SENHORA DAS MERCES', "Sistema de Gerenciamento Hospitalar", "Complexidade", "+----------------------------------------------------------------------------------------------------------------------------Spdata-+",
+                "| Emitido em:", "Sistema de Gestão Hospitalar", "+-----------------------------------------------------------------------------------------------------------------------------------+", "Unidade:"]  # Texto a ser ignorado
+    # Lista para armazenar os dados
+    all_data = []
+    # Abrir e ler o arquivo de textoS
+    with open(file_path, 'r', encoding='ISO-8859-1') as file:
+        current_doctor = None  # Inicializar a variável do médico aqui
+        for line in file:
+            if any(text in line for text in ignore_text):
+                continue  # Ignorar a linha
+            # Atualizar o nome do médico quando uma nova linha de médico for encontrada
+            if 'CRM/CRO:' in line:
+                current_doctor = extract_doctor_name(line)
+                continue  # Pular para a próxima iteração depois de atualizar o médico
+            pattern = r"(\d{8})\s+([A-Z\s]+)\s+(\d{2}\.\d{2}\.\d{2}\.\d{3}-\d)\s+(\d{2}/\d{2}/\d{4})\s+(\w+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+(?:\s+\(\d+,\d+%\)))"
+            match = re.match(pattern, line.strip())
+            #     r"(\d{8})"           # (\d{8}): Matches exactly 8 digits, captures the "Conta" (Account number).
+            #     r"\s+"               # \s+: Matches one or more whitespace characters, used as a separator.
+            #     r"([A-Z\s]+?)"       # ([A-Z\s]+?): Matches a sequence of uppercase letters and spaces, non-greedy; captures "Paciente" (Patient name).
+            #     r"\s+"               # Separator.
+            #     r"(\d{2}\.\d{2}\.\d{2}\.\d{3}-\d)"  # Matches a specific pattern like '03.01.01.004-8', captures "Procto" (Procedure code).
+            #     r"\s+"               # Separator.
+            #     r"(\d{2}/\d{2}/\d{4})"  # Matches dates in the format DD/MM/YYYY, captures "Data" (Date).
+            #     r"\s+"               # Separator.
+            #     r"(\w+)"             # (\w+): Matches one or more word characters (letters, digits, underscore), captures "Ato" (Action/Procedure type).
+            #     r"\s+"               # Separator.
+            #     r"([\d,]+)"          # ([\d,]+): Matches a sequence of digits or commas, captures "Vlr. Hosp." (Hospital Value).
+            #     r"\s+"               # Separator.
+            #     r"([\d,]+)"          # Matches a sequence of digits or commas, captures "Vlr. Medico" (Doctor's Fee).
+            #     r"\s+"               # Separator.
+            #     r"([\d,]+)"          # Matches a sequence of digits or commas, captures "Valor" (Total Value).
+            #     r"\s+"               # Separator.
+            #     r"([\d,]+(?:\s+\(\d+,\d+%?\)))"  # Complex pattern for "Repasse": includes digits, commas, and optionally a percentage in parentheses.
+            if match:
+                    data = {
+                        "Conta": match.group(1),
+                        "Paciente": match.group(2).strip(),
+                        "Procto": match.group(3),
+                        "Data": match.group(4),
+                        "Ato": match.group(5),
+                        "Vlr. Hosp.": match.group(6),
+                        "Vlr. Medico": match.group(7),
+                        "Valor": match.group(8),
+                        "Medico": current_doctor
+                    }
+                    all_data.append(data)
+
+    # Criar DataFrame
+    return pd.DataFrame(all_data)
+
+
+path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio = selecionar_arquivo_e_diretorio()
 output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Relatórios Médicos/10-10-23_10-04-24 - teste"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
@@ -328,6 +456,8 @@ lines_list_nao_pagos = read_file_to_list(path_to_file_nao_pagos)
 lines_list_a_faturar = read_file_to_list(path_to_file_a_faturar)
 lines_list_endo_pago = read_file_to_list(path_to_file_endo_pago)
 lines_list_endo_nao_pago = read_file_to_list(path_to_file_endo_nao_pago)
+lines_list_sus_aih = read_file_to_list(path_to_file_sus_aih)
+lines_list_sus_ambulatorio = read_file_to_list(path_to_file_sus_ambulatorio)
 
 # Dividir cada linha pela barra vertical '|' e remover espaços vazios das strings resultantes
 data_pagos = [line.split('|') for line in lines_list_pagos]
@@ -402,6 +532,9 @@ dados_crua_inicial_endo_nao_pagos.dropna(how='all', inplace=True)
 dados_crua_inicial_endo_nao_pagos = dados_crua_inicial_endo_nao_pagos.drop(dados_crua_inicial_endo_nao_pagos.columns[[0, 2, 6, 7, 8, 9, 10, 12]], axis=1)
 dados_crua_inicial_endo_nao_pagos.reset_index(drop=True, inplace=True)
 dados_crua_inicial_endo_nao_pagos.columns = ['Conta', 'Paciente', 'Data Atend.', 'Procedimento', 'Valor']
+
+
+
 
 #Dicionário com os nomes corretos para os convenios
 dicionario_convenios = {
@@ -572,6 +705,8 @@ id_dados_processados_endo_pagos_df = dados_processados_endo_pagos_df['Conta'].un
 # Filtrando o dataframe df_faturados para remover os procedimentos já pagos
 dados_precessados_endo_nao_pagos_df = dados_precessados_endo_nao_pagos_df[~dados_precessados_endo_nao_pagos_df['Conta'].isin(id_dados_processados_endo_pagos_df)]
 
+dados_processados_sus_aih_df = dados_sus_aih(path_to_file_sus_aih)
+dados_processados_sus_ambulatorio_df = dados_sus_ambulatorio(path_to_file_sus_ambulatorio)
 
 #Criação dos dicionários para cada médico
 dados_medicos_pagos = {}
@@ -579,6 +714,8 @@ dados_medicos_nao_pagos = {}
 dados_medicos_a_faturar = {}
 dados_medicos_endo_pagos = {}
 dados_medicos_endo_nao_pagos = {}
+dados_medicos_sus_aih = {}
+dados_medicos_sus_ambulatorio = {}
 
 #Preparação dos dados por médico para os pedidos não pagos
 for nome_medico_nao_pagos, grupo in dados_processados_nao_pagos_df.groupby("Medico"):
@@ -716,15 +853,65 @@ for nome_medico_endo_nao_pagos, grupo in dados_precessados_endo_nao_pagos_df.gro
     #Lista final para a construção das tabelas
     dados_medicos_endo_nao_pagos[nome_medico_endo_nao_pagos] = [dados_nao_pagos_soma_total, dados_pdf_endo_nao_pagos, dados_pdf_endo_nao_pagos_soma_conv, dados_pdf_endo_nao_pagos_paciente]
 
+for nome_medico_sus_aih, grupo in dados_processados_sus_aih_df.groupby("Medico"):
+    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
+    grupo_sem_medico = grupo.drop('Medico', axis=1)
+    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(valor_para_float)
+    # Agrupar por convênio e somar valores
+    total_faturado = grupo_sem_medico['Valor'].sum()
+    # Formatar as colunas de valores para o formato de moeda
+    total_faturado_formatado = formatar_valor(total_faturado)
+    # Preparar dados para terceira tabela
+    totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Valor"].sum().reset_index()
+    totais_por_paciente["Valor"] = totais_por_paciente["Valor"].apply(formatar_valor)
+    # Preparar dados para a primeira tabela
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(formatar_valor)
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    dados_sus_aih_soma_total = [["Valor"], [total_faturado_formatado]]
+    dados_pdf_sus_aih = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
+    dados_pdf_sus_aih_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
+    #Lista final para a construção das tabelas
+    dados_medicos_sus_aih[nome_medico_sus_aih] = [dados_sus_aih_soma_total, dados_pdf_sus_aih, dados_pdf_sus_aih_paciente]
 
-todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys()) | set(dados_medicos_endo_pagos.keys()) | set(dados_medicos_endo_nao_pagos.keys())
+for nome_medico_sus_ambulatorio, grupo in dados_processados_sus_ambulatorio_df.groupby("Medico"):
+    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
+    grupo_sem_medico = grupo.drop('Medico', axis=1)
+    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(valor_para_float)
+    grupo_sem_medico['Vlr. Hosp.'] = grupo_sem_medico['Vlr. Hosp.'].apply(valor_para_float)
+    grupo_sem_medico['Vlr. Medico'] = grupo_sem_medico['Vlr. Medico'].apply(valor_para_float)
+    # Agrupar por convênio e somar valores
+    total_faturado = grupo_sem_medico['Valor'].sum()
+    # Formatar as colunas de valores para o formato de moeda
+    total_faturado_formatado = formatar_valor(total_faturado)
+    # Preparar dados para terceira tabela
+    totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Valor"].sum().reset_index()
+    totais_por_paciente["Valor"] = totais_por_paciente["Valor"].apply(formatar_valor) 
+    # Preparar dados para a primeira tabela
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(formatar_valor)
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    dados_sus_ambulatorio_soma_total = [["Valor"], [total_faturado_formatado]]
+    dados_pdf_sus_ambulatorio = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
+    dados_pdf_sus_ambulatorio_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
+    #Lista final para a construção das tabelas
+    dados_medicos_sus_ambulatorio[nome_medico_sus_ambulatorio] = [dados_sus_ambulatorio_soma_total, dados_pdf_sus_ambulatorio, dados_pdf_sus_ambulatorio_paciente]
+
+
+todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys()) | set(dados_medicos_endo_pagos.keys()) | set(dados_medicos_endo_nao_pagos.keys()) | set(dados_medicos_sus_aih.keys()) | set(dados_medicos_sus_ambulatorio.keys())
 
 #Ajusdtando as datas e os formatos de Data para a geração dos gráficos
 dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'])
 dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'])
 dados_processados_pagos_df['Mês'] = dados_processados_pagos_df['Pago'].dt.to_period('M')
 dados_processados_nao_pagos_df['Mês'] = dados_processados_nao_pagos_df['Data'].dt.to_period('M')
-
+dados_processados_sus_aih_df['Internação'] = pd.to_datetime(dados_processados_sus_aih_df['Internação'])
+dados_processados_sus_aih_df['Alta'] = pd.to_datetime(dados_processados_sus_aih_df['Alta'])
+dados_processados_sus_ambulatorio_df['Valor'] = dados_processados_sus_ambulatorio_df['Valor'].apply(valor_para_float)
+dados_processados_sus_ambulatorio_df['Data'] = pd.to_datetime(dados_processados_sus_ambulatorio_df['Data'])
+dados_processados_sus_ambulatorio_df['Valor'] = dados_processados_sus_ambulatorio_df['Valor'].apply(valor_para_float)
+dados_processados_sus_ambulatorio_df['Vlr. Hosp.'] = dados_processados_sus_ambulatorio_df['Vlr. Hosp.'].apply(valor_para_float)
+dados_processados_sus_ambulatorio_df['Vlr. Med.'] = dados_processados_sus_ambulatorio_df['Vlr. Med.'].apply(valor_para_float)
 for nome_medico in todos_medicos:
     nome_arquivo = ''.join(e for e in nome_medico if e.isalnum() or e in [' ', '_', '-']).strip()
     caminho_completo = os.path.join(output_directory, f"{nome_arquivo}_relatorio.pdf")
@@ -736,6 +923,8 @@ for nome_medico in todos_medicos:
     tabelas_a_faturar = []
     tabelas_endo_pagos = []
     tabelas_endo_nao_pagos = []
+    tabelas_sus_aih = []
+    tabelas_sus_ambulatorio = []
 
     # Verifica se o médico está presente nos dados pagos e adiciona as tabelas correspondentes
     if nome_medico in dados_medicos_pagos:
@@ -775,6 +964,18 @@ for nome_medico in todos_medicos:
                               ("Soma Total", dados_medicos_endo_nao_pagos[nome_medico][0])]:
             tabelas_endo_nao_pagos.append((titulo, dados))
 
+    if nome_medico in dados_medicos_sus_aih:
+        for titulo, dados in [("Valores por procedimento", dados_medicos_sus_aih[nome_medico][1]),
+                              ("Totais por Paciente", dados_medicos_sus_aih[nome_medico][2]),
+                              ("Soma Total", dados_medicos_sus_aih[nome_medico][0])]:
+            tabelas_sus_aih.append((titulo, dados))
+
+    if nome_medico in dados_medicos_sus_ambulatorio:
+        for titulo, dados in [("Valores por procedimento", dados_medicos_sus_ambulatorio[nome_medico][1]),
+                              ("Totais por Paciente", dados_medicos_sus_ambulatorio[nome_medico][2]),
+                              ("Soma Total", dados_medicos_sus_ambulatorio[nome_medico][0])]:
+            tabelas_sus_ambulatorio.append((titulo, dados))
+
     
     #Função para a criação dos gráficos
     dados_medico_pagos = dados_processados_pagos_df[dados_processados_pagos_df['Medico'] == nome_medico]
@@ -791,8 +992,8 @@ for nome_medico in todos_medicos:
         graficos.append(grafico_nao_pagos)
 
     # Chama a função de geração de PDF apenas se houver tabelas para incluir
-    if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar or tabelas_endo_pagos or tabelas_endo_nao_pagos or graficos:
-        generate_pdf_table(caminho_completo, titulo_texto, subtitulo, graficos, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar, tabelas_endo_pagos, tabelas_endo_nao_pagos)
+    if tabelas_pagos or tabelas_nao_pagos or tabelas_a_faturar or tabelas_endo_pagos or tabelas_endo_nao_pagos or graficos or tabelas_sus_aih or tabelas_sus_ambulatorio:
+        generate_pdf_table(caminho_completo, titulo_texto, subtitulo, graficos, tabelas_pagos, tabelas_nao_pagos, tabelas_a_faturar, tabelas_endo_pagos, tabelas_endo_nao_pagos, tabelas_sus_aih, tabelas_sus_ambulatorio)
 
 delete_png_files(output_directory)
 mostrar_mensagem()

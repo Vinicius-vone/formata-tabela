@@ -41,7 +41,7 @@ with open(file_path, 'r', encoding='ISO-8859-1') as file:
                 valor_repassado = groups[10]
                 
                 # Adicionar linha ao conjunto de dados
-                data.append([aih, paciente, procedimento, internacao, alta, ato, quantidade, pontos, valor, valor_repassado, current_doctor])
+                data.append([aih, paciente, procedimento, internacao, alta, ato, quantidade, valor, valor_repassado, current_doctor])
 
 # Criar DataFrame
 df = pd.DataFrame(data, columns=['AIH', 'Paciente', 'Procedimento', 'Internação', 'Alta', 'Ato', 'Quantidade', 'Pontos', 'Valor', 'Valor Repassado', 'Médico'])

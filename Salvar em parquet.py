@@ -113,7 +113,7 @@ def selecionar_arquivo_e_diretorio():
     path_to_file_sus_aih = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos SUS AIH", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     path_to_file_sus_ambulatorio = filedialog.askopenfilename(title="Selecione o arquivo de texto dos pedidos SUS Ambulatorio", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     output_directory = filedialog.askdirectory(title="Selecione o diretório para salvar o arquivo PDF")
-    subtitulo = simpledialog.askstring("Subtítulo", "Digite o subtítulo do documento:", parent=root)
+    subtitulo = simpledialog.askstring("Subtítulo", "Digite o período:", parent=root)
     root.destroy()
     return path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio, output_directory
 
@@ -483,10 +483,10 @@ dados_processados_sus_aih_df = dados_sus_aih(path_to_file_sus_aih)
 dados_processados_sus_ambulatorio_df = dados_sus_ambulatorio(path_to_file_sus_ambulatorio)
 
 
-dados_processados_a_faturar_df.to_parquet(f"{output_directory}/a_faturar.parquet")
-dados_processados_pagos_df.to_parquet(f"{output_directory}/pagos.parquet")
-dados_processados_nao_pagos_df.to_parquet(f"{output_directory}/nao_pagos.parquet")
-dados_processados_endo_pagos_df.to_parquet(f"{output_directory}/endo_pagos.parquet")
-dados_precessados_endo_nao_pagos_df.to_parquet(f"{output_directory}/endo_nao_pagos.parquet")
-dados_processados_sus_aih_df.to_parquet(f"{output_directory}/sus_aih.parquet")
-dados_processados_sus_ambulatorio_df.to_parquet(f"{output_directory}/sus_ambulatorio.parquet")
+dados_processados_a_faturar_df.to_parquet(f"{output_directory}/a_faturar_{subtitulo}.parquet")
+dados_processados_pagos_df.to_parquet(f"{output_directory}/pagos_{subtitulo}.parquet")
+dados_processados_nao_pagos_df.to_parquet(f"{output_directory}/nao_pagos_{subtitulo}.parquet")
+dados_processados_endo_pagos_df.to_parquet(f"{output_directory}/endo_pagos_{subtitulo}.parquet")
+dados_precessados_endo_nao_pagos_df.to_parquet(f"{output_directory}/endo_nao_pagos_{subtitulo}.parquet")
+dados_processados_sus_aih_df.to_parquet(f"{output_directory}/sus_aih_{subtitulo}.parquet")
+dados_processados_sus_ambulatorio_df.to_parquet(f"{output_directory}/sus_ambulatorio_{subtitulo}.parquet")

@@ -4,14 +4,20 @@ import pandas as pd
 import numpy as np
 
 # Carregar os DataFrames
-df_pagos = pd.read_parquet("C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/pagos.parquet")
-df_nao_pagos = pd.read_parquet("C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/nao_pagos.parquet")
+df_pagos = pd.read_parquet("C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Dataframes/01-10-22_30-04-24/pagos_01-10-22_30-04-24.parquet")
+df_nao_pagos = pd.read_parquet("C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Dataframes/01-10-22_30-04-24/nao_pagos_01-10-22_30-04-24.parquet")
 
 # Converter datas e criar colunas 'Mês'
-df_pagos['Mês'] = pd.to_datetime(df_pagos['Pago']).dt.to_period('M').dt.start_time
-df_nao_pagos['Mês'] = pd.to_datetime(df_nao_pagos['Data']).dt.to_period('M').dt.start_time
+df_pagos['Mês'] = pd.to_datetime(df_pagos['Pago'], format='%d/%m/%Y').dt.to_period('M').dt.start_time
+df_nao_pagos['Mês'] = pd.to_datetime(df_nao_pagos['Data'], format='%d/%m/%Y').dt.to_period('M').dt.start_time
 
 output_directory_teste = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Gráficos Médicos/teste"
+
+medicos_cooperados = pd.read_excel("C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/listagem_medicos_cooperados.xlsx")
+medicos_cooperados.drop(columns=["CRM"], inplace=True)
+lista_medicos_cooperados = medicos_cooperados['Nome'].to_list()
+
+df_nao_pagos = df_nao_pagos[~((df_nao_pagos['Medico'].isin(lista_medicos_cooperados)) & (df_nao_pagos['Convenio'] == 'Unimed'))]
 
 def plot_procedimentos(df_pagos, df_nao_pagos, output_directory):
     # Total de pagos e não pagos por mês
@@ -50,7 +56,7 @@ def plot_procedimentos(df_pagos, df_nao_pagos, output_directory):
             ax.grid(True)
             # Definir o formato de data para o eixo x
             ax.xaxis.set_major_locator(mdates.MonthLocator())
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b\n%Y'))  # Formato: "Abreviação do Mês Ano"
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%m\n%y'))  # Formato: "Abreviação do Mês Ano"
         
         # Oculta os axes extras se houver
         for ax in axs[n_convenios:]:

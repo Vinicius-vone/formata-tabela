@@ -18,6 +18,8 @@ ignore_patterns = [
     "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
     "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                                                            |",
     "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Apenas Glosas                                   |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Todas                                           |",
+
     "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
     "| Processamento:",
     "|                       Subtotal              --->>",
@@ -55,7 +57,11 @@ ignore_patterns = [
     "+---------+-+-----------------------------------------+----------+-------------------------------------------+-----+-----+--------+----------+------+----------+",
     "|                                                                                     Valor Total ----->>> ",
     "|                                            S.P.Data Servico de Processamento de Dados Ltda - Tel.:(31) 3399-2500                                             |",
-    "| (Valores Pagos)               Com Valores do Filme no Total       Valores do Filme não Somado ao Repasse                                                     |"
+    "| (Valores Pagos)               Com Valores do Filme no Total       Valores do Filme não Somado ao Repasse                                                     |",
+    "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
+    "|                       Subtotal              --->>  |",
+    "|                       Total para este medico -->>  |",
+    "| Registro |  Data    | Paciente                     | Procedimento             | Motivo da Glosa |  Baixa   | V. Faturado | V. Recebido | Diferenca|  A Maior |"
 
 ]
 

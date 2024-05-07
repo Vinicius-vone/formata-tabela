@@ -76,7 +76,7 @@ def valor_para_float(valor_formatado):
 
 
 df_pagos["V. Faturado"] = df_pagos["V. Faturado"].apply(valor_para_float)
-
+df_nao_pagos = df_nao_pagos[~df_nao_pagos['Convenio'].str.contains('COMPRA DE LEITO DA SES/MG')]
 custo_medio_procedimento = df_pagos.groupby('Procedimento')['V. Faturado'].mean().sort_values(ascending=False)
 
 plot_procedimentos(df_pagos, df_nao_pagos, output_directory_teste)
@@ -106,5 +106,6 @@ plt.xticks(rotation=90)
 plt.grid(True)
 plt.tight_layout()
 plt.savefig(f"{output_directory_teste}/detalhado_boxplot_top_20_valores_medios.png")
+
 
 

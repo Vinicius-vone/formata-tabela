@@ -28,7 +28,7 @@ def plot_procedimentos(df_pagos, df_nao_pagos, output_directory):
     plt.figure(figsize=(14, 7))
     pagos_por_mes.plot(label='Pagos', marker='o', linestyle='-', color='blue')
     nao_pagos_por_mes.plot(label='Não Pagos', marker='x', linestyle='--', color='red')
-    plt.title('Total de Procedimentos Pagos e Não Pagos por Mês')
+    plt.title('Total de Procedimentos Pagos e Não Pagos ao HNSM pelos convênios por Mês')
     plt.xlabel('Mês')
     plt.ylabel('Quantidade de Procedimentos')
     plt.legend()
@@ -50,7 +50,7 @@ def plot_procedimentos(df_pagos, df_nao_pagos, output_directory):
         for i, convenio in enumerate(convenios_por_mes.columns):
             ax = axs[i]
             ax.plot(convenios_por_mes.index, convenios_por_mes[convenio], label=f'{convenio}', marker='o', linestyle='-', color=cmap(i / n_convenios))
-            ax.set_title(f'Procedimentos {status} para Convênio: {convenio}')
+            ax.set_title(f'Procedimentos {status} ao HNSM para Convênio: {convenio}')
             ax.set_xlabel('Mês')
             ax.set_ylabel('Quantidade de Procedimentos')
             ax.legend()
@@ -86,7 +86,7 @@ top20_procedimentos = custo_medio_procedimento.head(20)
 # Visualizar o custo médio dos top 20 procedimentos
 plt.figure(figsize=(12, 8))
 top20_procedimentos.plot(kind='bar', color='skyblue')
-plt.title('Top 20 Custo Médio por Procedimento')
+plt.title('Top 20 valor Médio de Honorários Médicos por Procedimento')
 plt.xlabel('Tipo de Procedimento')
 plt.ylabel('Custo Médio')
 plt.xticks(rotation=90)
@@ -99,7 +99,7 @@ top20_df = df_pagos[df_pagos['Procedimento'].isin(top20_procedimentos.index)]
 
 plt.figure(figsize=(12, 8))
 sns.boxplot(x='Procedimento', y='V. Faturado', data=top20_df)
-plt.title('Distribuição de Custos para os Top 20 Procedimentos')
+plt.title('Distribuição de valores de Honorários Médicos para os Top 20 Procedimentos')
 plt.xlabel('Tipo de Procedimento')
 plt.ylabel('Valor Pago')
 plt.xticks(rotation=90)

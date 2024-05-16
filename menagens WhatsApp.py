@@ -24,7 +24,7 @@ def enviar_mensagem(nome, arquivo, mensagem, nome_sem_acentos):
             pag.click(x=188, y=106)
             pag.sleep(2)
             pag.write(f"{nome_sem_acentos}")
-            pag.sleep(2)
+            pag.sleep(4)
             pag.press('enter')
             pag.sleep(2)
             pag.click(x=542, y=696)
@@ -66,8 +66,9 @@ print(dicionario)
 
 nomes = contatos_df['Nome'].tolist()
 # nomes = ['Celular Hospital','Joao Antonio Chico', 'Vinícius Guimarães']
-periodo_referencia = "10 de outubro de 2023 a 10 de abril de 2024"
-
+periodo_referencia = "março de 2024 a maio de 2024"
+#Listando nomes enviados
+nomes_enviados = []
 
 # Iterar sobre a lista de médicos
 pag.click(x=227, y=752)
@@ -75,5 +76,19 @@ for nome in nomes:
     nome_sem_acentos = ''.join(c for c in unicodedata.normalize('NFD', nome) if unicodedata.category(c) != 'Mn')
     nome_formatado = nome_sem_acentos.upper()
     arquivo = f"{nome_formatado}_relatorio.pdf"
-    mensagem = f"Prezado Dr(a). {nome}, segue em anexo o relatório de Honorários Médicos do período de referência compreendido entre {periodo_referencia}."
-    enviar_mensagem(nome, arquivo, mensagem, nome_sem_acentos)
+    mensagem = f"""
+    Prezado Dr(a). {nome}, por favor, desconsidere o último relatório enviado. Segue em anexo o relatório correto de Honorários Médicos do período de referência compreendido entre {periodo_referencia}.
+    Lembrando que, caso seja cooperado da Unimed, o pagamento será efetuado diretamente na sua conta corrente e os valores listados no relatórios não são os valore a serem pagos pelo convênio.
+    Qualquer dúvida, estou à disposição.
+    Atenciosamente,
+    Alfredo Vinícius Andrade Guimarães
+    """
+    result = enviar_mensagem(nome, arquivo, mensagem, nome_sem_acentos)
+    if "enviado com sucesso" in result:
+        nomes_enviados.append(nome)
+
+
+nomes_enviados.sort()
+with open('enviados.txt', 'w') as f:
+    for nome in nomes_enviados:
+        f.write(nome + '\n')

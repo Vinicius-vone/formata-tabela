@@ -362,7 +362,7 @@ def dados_sus_aih(file_path):
                 continue  # Ignorar a linha
             # Atualizar o nome do médico quando uma nova linha de médico for encontrada
             if 'CPF:' in line:
-                current_doctor = line.split('CPF:')[0].strip()
+                current_doctor = " ".join(line.split('CPF:')[0].strip().split())
                 continue  # Pular para a próxima iteração depois de atualizar o médico
 
             # Processar linhas de dados
@@ -626,7 +626,10 @@ for index, linha in dados_crua_inicial_endo_pagos.iterrows():
         convenio_atual_endo_pagos = " ".join(registro.split()[2:])
         convenio_atual_endo_pagos = dicionario_convenios.get(convenio_atual_endo_pagos, convenio_atual_endo_pagos)
     elif "Prestador de Servico:" in registro:
-        medico_atual_endo_pagos = " ".join(registro.split()[8:])
+        # Encontra o índice onde começa a string "Prestador de Servico:"
+        start_index = registro.index("Prestador de Servico:") + len("Prestador de Servico:")
+        # Extrai o nome do médico a partir deste índice
+        medico_atual_endo_pagos = " ".join(registro[start_index:].strip().split)
     else:
         # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
         dados_processados_endo_pagos.append({
@@ -641,7 +644,10 @@ for index, linha in dados_crua_inicial_endo_nao_pagos.iterrows():
         convenio_atual_endo_nao_pagos = " ".join(registro.split()[2:])
         convenio_atual_endo_nao_pagos = dicionario_convenios.get(convenio_atual_endo_nao_pagos, convenio_atual_endo_nao_pagos)
     elif "Prestador de Servico:" in registro:
-        medico_atual_endo_nao_pagos = " ".join(registro.split()[8:])
+        # Encontra o índice onde começa a string "Prestador de Servico:"
+        start_index = registro.index("Prestador de Servico:") + len("Prestador de Servico:")
+        # Extrai o nome do médico a partir deste índice
+        medico_atual_endo_pagos = " ".join(registro[start_index:].strip().split)
     else:
         # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
         dados_processados_endo_nao_pagos.append({

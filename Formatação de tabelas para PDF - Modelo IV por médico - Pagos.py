@@ -9,6 +9,75 @@ from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT  # Importação necessária para centralizar o texto
 import os
 
+
+ignore_patterns = [
+    "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                                                            |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Apenas Glosas                                   |",
+    "+----------+----------+------------------------------+--------------------------+-----------------+----------+-------------+-------------+----------+----------+",
+    "| Processamento:",
+    "|                       Subtotal              --->>",
+    "|                       Total para este medico -->>",
+    "|                                Total da conta ->>",
+    "+----------------------------------------------------+-------------------------------------------------------+-------------+-------------+----------+----------+",
+    "|     C.D.C.: 000000 a 999999   Unidade: 00 a 99   |",
+    "| Registro |  Data    | Paciente                     | Procedimento             | Motivo da Glosa |  Baixa   | V. Faturado | V. Recebido | Diferenca|  A Maior |",
+    "|                       Total Geral           --->>  |                Número de Contas: 4099                 |   665.099,50|   137.092,37|-528.155,02|    147,89|",
+    "|                       Total Convenio        -->> ",
+    "|                       Total Geral           --->> ",
+    "|                       Total para este medico -->>  |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Apenas Pagas                                    |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Não Pagas                                       |",
+    "| Sistema de Gestão Hospitalar                 Faturamento de Convenios",
+    "+------------------------------------+-+---------+------+-+--+-+----------+----------+-------+---+---+---+---+----+----+--------------------------+------------+",
+    "|      Nome do Paciente              |R|Registro |N.Fis.|T|R |N|Dt. Atend.| Dt. Alta |Horario|SP |SH |RC |MM |Emit|Fech| Convenio                 | Valor Conta|",
+    "+------------------------------------+-+---------+------+-+--+-+----------+----------+-------+---+---+---+---+----+----+--------------------------+------------+",
+    "|  Total de Registros por Médico   =>",
+    "+--------------------------------------------------------------------------------------------------------------------------------------------------------------+",
+    "|                                       S.P.Data - Servico de Processamento de Dados Ltda. - Telefone: (031)3399-2500                                          |",
+    "|             Total de Registros   =>",
+    "|                                                 HOSPITAL NOSSA SENHORA DAS MERCES                                                                            |",
+    "| Emitido em:                 Processamento:                C.D.C.: 000000 a 999999               Unidade: 00 a 99 |"
+    "|                                                                                                                                                              |",
+    "+-------------------------------------------------------------------------------------------------------------------------------------------------------Spdata-+",
+    "| Sistema de Gestão Hospitalar                                       Fatura de Prestadores de Servico - Analitica - V  ",
+    "| (Valores Faturados)           Com Valores do Filme no Total       Valores do Filme não Somado ao Repasse                                                     |",
+    "|                                                 HOSPITAL NOSSA SENHORA DAS MERCES                                                                            |",
+    "| Emitido em: ",
+    "+--------------------------------------------------------------------------------------------------------------------------------------------------------------+",
+    "| CNPJ: 24.731.747/0001-88 PRACA BARAO DE ITAMBE, 31                Bairro: CENTRO                    Cidade: SAO JOAO DEL REI             Fone: 32 3379-2800  |",
+    "+---------+-+-----------------------------------------+----------+-------------------------------------------+-----+-----+--------+----------+------+----------+"
+    "| Conta   |C| Nome do Paciente                        |Data Atend|Procedimento AMB                           |Qtde |C.H. | Filme  |Vlr. Total|  %Rp |  Valor   |",
+    "+---------+-+-----------------------------------------+----------+-------------------------------------------+-----+-----+--------+----------+------+----------+",
+    "|                                                                                     Valor Total ----->>> ",
+    "|                                            S.P.Data Servico de Processamento de Dados Ltda - Tel.:(31) 3399-2500                                             |",
+    "| (Valores Pagos)               Com Valores do Filme no Total       Valores do Filme não Somado ao Repasse                                                     |",
+    "Total de Registros por Convênio =>",
+    "|                                                                                 Total p/este prestador ->",
+    "|                                                                               Repasse p/este prestador ->"
+]
+
+def line_should_be_ignored(line):
+    """
+    Verifica se a linha contém algum dos padrões especificados para ser ignorada.
+    """
+    for pattern in ignore_patterns:
+        if pattern in line:
+            return True
+    return False
+
+def read_file_to_list(input_file_path):
+    """
+    Lê o arquivo e retorna uma lista com as linhas que não contêm os padrões especificados.
+    """
+    lines = []
+    with open(input_file_path, 'r', encoding='ISO-8859-1') as infile:
+        for line in infile:
+            if not line_should_be_ignored(line):
+                # Adiciona a linha à lista, removendo espaços extras e o caractere de nova linha
+                cleaned_line = line.strip()
+                lines.append(cleaned_line)
+    return lines
 # Função para formatar valores em formato de moeda
 
 def formatar_valor(valor):
@@ -121,15 +190,10 @@ def generate_pdf_table(data, output_file_path, titulo_texto, additional_tables=[
 
 def selecionar_arquivo_e_diretorio():
     Tk().withdraw()  # Não mostrar a janela completa do Tk
-    path_to_file = filedialog.askopenfilename(title="Selecione o arquivo Excel", filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")])
+    path_to_file = filedialog.askopenfilename(title="Selecione o arquivo Excel", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
     return path_to_file, output_directory
 
-def selecionar_arquivo_e_diretorio():
-    Tk().withdraw()  # Não mostrar a janela completa do Tk
-    path_to_file = filedialog.askopenfilename(title="Selecione o arquivo Excel", filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")])
-    output_directory = filedialog.askdirectory(title="Selecione o diretório onde salvar o arquivo processado")
-    return path_to_file, output_directory
 
 def selecionar_tipo_valor():
     root = Tk()
@@ -146,9 +210,7 @@ def mostrar_mensagem():
 
 path_to_file, output_directory = selecionar_arquivo_e_diretorio()
 tipo_valor = selecionar_tipo_valor()
-dados_crua_inicial = pd.read_excel(path_to_file)
-
-tipo_valor = tipo_valor if tipo_valor in ["Pagos", "Faturados"] else "Pagos"
+dados_crua_inicial = read_file_to_list(path_to_file)
 
 dicionario_convenios = {
     'BANCO DO BRASIL':"Banco do Brasil", 'POLICIA MILITAR':"Polícia Militar", 'CEMIG SAUDE':"CEMIG", 'FUSEX':"FUSEX",
@@ -164,7 +226,16 @@ dicionario_convenios = {
 
 # Inicializações
 
-dados_crua = dados_crua_inicial.ffill()
+data_pagos = [line.split('|') for line in dados_crua_inicial]
+# Remover espaços vazios em cada elemento da lista
+data_pagos = [[item.strip() for item in row] for row in data_pagos]
+dados_crua_inicial_pagos = pd.DataFrame(data_pagos)
+dados_crua_inicial_pagos.replace('', pd.NA, inplace=True)
+dados_crua_inicial_pagos.dropna(how='all', inplace=True)
+dados_crua_inicial_pagos = dados_crua_inicial_pagos.drop(dados_crua_inicial_pagos.columns[[0, 10, 11]], axis=1)
+# Se necessário, você pode querer resetar os índices após remover linhas
+dados_crua_inicial_pagos.reset_index(drop=True, inplace=True)
+dados_crua_inicial_pagos.columns = ['Registro', 'Data', 'Paciente', 'Procedimento', 'Motivo da Glosa', 'Pago', 'V.Faturado', 'V.Recebido', 'Diferenca']
 
 
 medico_atual = ''
@@ -172,7 +243,7 @@ convenio_atual = ''
 dados_processados = []
 
 
-for index, linha in dados_crua.iterrows():
+for index, linha in dados_crua_inicial_pagos.iterrows():
     registro = str(linha['Registro']).strip()
     if "Convenio:" in registro:
         convenio_atual = " ".join(registro.split()[2:])

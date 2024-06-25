@@ -31,7 +31,7 @@ ignore_patterns = [
     "|                       Total Geral           --->> ",
     "|                       Total para este medico -->>  |",
     "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Apenas Pagas                                    |",
-    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Não Pagas                                       |",
+    "| HOSPITAL NOSSA SENHORA DAS MERCES              Faturamento Convenios - Glosas(Listagem IV) -                 Não Pagas",
     "| Sistema de Gestão Hospitalar                 Faturamento de Convenios",
     "+------------------------------------+-+---------+------+-+--+-+----------+----------+-------+---+---+---+---+----+----+--------------------------+------------+",
     "|      Nome do Paciente              |R|Registro |N.Fis.|T|R |N|Dt. Atend.| Dt. Alta |Horario|SP |SH |RC |MM |Emit|Fech| Convenio                 | Valor Conta|",
@@ -225,10 +225,10 @@ def mostrar_mensagem():
     root.destroy()
 
 
-path_to_file_pagos = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Arquivos TXT SPData/Lucas Ferreira Neres/Relatório Lucas Ferreira Neres - Jan 2024 - jun 2024 - Pagos.TXT" 
-path_to_file_nao_pagos = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Arquivos TXT SPData/Lucas Ferreira Neres/Relatório Lucas Ferreira Neres - Jan 2024 - jun 2024 - Nao Pagos.TXT"
-output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Relatórios Médicos/Lucas Ferreira Neres"
-subtitulo = 'Jan/24 a Jun/24'
+path_to_file_pagos = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Arquivos TXT SPData/Gustavo Amorim Ferreira/Gustavo amorim ferreira - Pagos.TXT" 
+path_to_file_nao_pagos = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Arquivos TXT SPData/Gustavo Amorim Ferreira/Gustavo amorim ferreira - nao Pagos.TXT"
+output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Relatórios Médicos/Gustavo Amorim Ferreira"
+subtitulo = 'Dez/23 a Jun/24'
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)

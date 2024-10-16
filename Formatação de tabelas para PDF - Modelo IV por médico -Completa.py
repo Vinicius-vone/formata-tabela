@@ -368,7 +368,7 @@ def dados_sus_aih(file_path):
             # Processar linhas de dados
             if line.strip() and line[0].isdigit():
                 # Regex detalhada para capturar todos os campos
-                regex = r"(\d+) ([\w\s]+?) +(\d{10}) ([\w\s]+?) (\d{2}/\d{2}/\d{4}) (\d{2}/\d{2}/\d{4}) ([\w-]+) +(\d+) +(\d+) +(\d+,\d+) +(\d+,\d+)"
+                regex = r"(\d+) ([\w\s]+?) +(\d{10}) ([\w\s/-]+?) (\d{2}/\d{2}/\d{4}) (\d{2}/\d{2}/\d{4}) ([\w-]+) +(\d+) +(\d+) +(\d+,\d+) +(\d+,\d+)"
                 match = re.match(regex, line)
                 if match:
                     groups = match.groups()
@@ -706,6 +706,7 @@ dados_precessados_endo_nao_pagos_df = dados_precessados_endo_nao_pagos_df[~dados
 
 dados_processados_sus_aih_df = dados_sus_aih(path_to_file_sus_aih)
 dados_processados_sus_ambulatorio_df = dados_sus_ambulatorio(path_to_file_sus_ambulatorio)
+dados_processados_sus_aih_df = dados_processados_sus_aih_df[~(dados_processados_sus_aih_df['Paciente']=='MARCO ANTONIO DE SOUSA ASSIS')]
 
 #Criação dos dicionários para cada médico
 dados_medicos_pagos = {}
@@ -906,6 +907,11 @@ dados_processados_sus_aih_df['Internação'] = pd.to_datetime(dados_processados_
 dados_processados_sus_aih_df['Alta'] = pd.to_datetime(dados_processados_sus_aih_df['Alta'], errors='coerce', format='%d/%m/%Y')
 dados_processados_sus_ambulatorio_df['Data'] = pd.to_datetime(dados_processados_sus_ambulatorio_df['Data'], errors='coerce', format='%d/%m/%Y')
 dados_processados_sus_ambulatorio_df['Vlr. Medico'] = dados_processados_sus_ambulatorio_df['Vlr. Medico'].apply(valor_para_float)
+
+# dados_processados_sus_aih_df[(dados_processados_sus_aih_df['Medico']=='GUSTAVO HENRIQUE REIS DE OLIVEIRA')]
+
+# dados_processados_sus_aih_df['AIH'].unique()
+
 for nome_medico in todos_medicos:
     nome_arquivo = ''.join(e for e in nome_medico if e.isalnum() or e in [' ', '_', '-']).strip()
     caminho_completo = os.path.join(output_directory, f"{nome_arquivo}_relatorio.pdf")

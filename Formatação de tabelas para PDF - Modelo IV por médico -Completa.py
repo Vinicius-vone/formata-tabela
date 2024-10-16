@@ -123,7 +123,7 @@ def on_page(canvas, doc):
     styles = getSampleStyleSheet()
 
     # Carrega a imagem e ajusta seu tamanho proporcionalmente
-    header = Image('C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Modelo LaTeX/Logo hospital.png')
+    header = Image('C:/Users/TI 2/Desktop/Códigos Python/Logo hospital.png')
     max_height = 0.3 * inch  # Altura máxima para a imagem do cabeçalho
     image_aspect = header.imageWidth / header.imageHeight  # Calcula a proporção da imagem
 
@@ -452,7 +452,7 @@ def dados_sus_ambulatorio(file_path):
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio = selecionar_arquivo_e_diretorio()
-output_directory = "C:/Users/ACER/Meu Drive/Hospital Nossa Senhora das Mercês/Códigos Python/Códigos Funcionando/Relatórios Médicos/12-07-24_19-08-24"
+output_directory = "C:/Users/TI 2/Desktop/Códigos Python/Relatórios Médicos/13-09-2024_16-10-2024/Relatórios"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
@@ -525,19 +525,16 @@ dados_crua_inicial_a_faturar['Convenio'] = dados_crua_inicial_a_faturar['Conveni
 dados_crua_inicial_endo_pagos.replace('', pd.NA, inplace=True)
 # Remove linhas onde todos os campos estão vazios
 dados_crua_inicial_endo_pagos.dropna(how='all', inplace=True)
-dados_crua_inicial_endo_pagos = dados_crua_inicial_endo_pagos.drop(dados_crua_inicial_endo_pagos.columns[[0, 10, 11]], axis=1)
+dados_crua_inicial_endo_pagos = dados_crua_inicial_endo_pagos.drop(dados_crua_inicial_endo_pagos.columns[[0, 2, 6, 7, 8, 9, 10, 12]], axis=1)
 dados_crua_inicial_endo_pagos.reset_index(drop=True, inplace=True)
-dados_crua_inicial_endo_pagos.columns = ['Registro', 'Data', 'Paciente', 'Procedimento', 'Motivo da Glosa', 'Pago', 'V. Faturado', 'V. Recebido', 'Diferenca']
-
+dados_crua_inicial_endo_pagos.columns = ['Conta', 'Paciente', 'Data Atend.', 'Procedimento', 'Valor']
 
 dados_crua_inicial_endo_nao_pagos.replace('', pd.NA, inplace=True)
 # Remove linhas onde todos os campos estão vazios
 dados_crua_inicial_endo_nao_pagos.dropna(how='all', inplace=True)
-dados_crua_inicial_endo_nao_pagos = dados_crua_inicial_endo_nao_pagos.drop(dados_crua_inicial_endo_nao_pagos.columns[[0, 8, 9, 10, 11]], axis=1)
+dados_crua_inicial_endo_nao_pagos = dados_crua_inicial_endo_nao_pagos.drop(dados_crua_inicial_endo_nao_pagos.columns[[0, 2, 6, 7, 8, 9, 10, 12]], axis=1)
 dados_crua_inicial_endo_nao_pagos.reset_index(drop=True, inplace=True)
-dados_crua_inicial_endo_nao_pagos.columns = ['Registro', 'Data', 'Paciente', 'Procedimento', 'Motivo da Glosa', 'Realizado', 'V. Faturado']
-
-
+dados_crua_inicial_endo_nao_pagos.columns = ['Conta', 'Paciente', 'Data Atend.', 'Procedimento', 'Valor']
 
 
 #Dicionário com os nomes corretos para os convenios
@@ -621,15 +618,13 @@ for index, linha in dados_crua_inicial_a_faturar.iterrows():
         })
 
 for index, linha in dados_crua_inicial_endo_pagos.iterrows():
-    registro = str(linha['Registro']).strip()
-    if "Convenio:" in registro:
-        convenio_atual_endo_pagos = " ".join(registro.split()[2:])
+    registro = str(linha['Conta']).strip()
+    if "Convenio.:" in registro:
+        convenio_atual_endo_pagos = " ".join(registro.split()[3:])
         convenio_atual_endo_pagos = dicionario_convenios.get(convenio_atual_endo_pagos, convenio_atual_endo_pagos)
-    elif "Prestador de Servico:" in registro:
-        # Encontra o índice onde começa a string "Prestador de Servico:"
-        start_index = registro.index("Prestador de Servico:") + len("Prestador de Servico:")
-        # Extrai o nome do médico a partir deste índice
-        medico_atual_endo_pagos = " ".join(registro[start_index:].strip().split)
+    elif "Laboratorio:" in registro:
+        medico_atual_endo_pagos = " ".join(registro.split()[1:])
+        medico_atual_endo_pagos = medico_atual_endo_pagos.replace("Exame de Endoscopia Digestiva", "")
     else:
         # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
         dados_processados_endo_pagos.append({
@@ -639,15 +634,13 @@ for index, linha in dados_crua_inicial_endo_pagos.iterrows():
         })
 
 for index, linha in dados_crua_inicial_endo_nao_pagos.iterrows():
-    registro = str(linha['Registro']).strip()
-    if "Convenio:" in registro:
-        convenio_atual_endo_nao_pagos = " ".join(registro.split()[2:])
+    registro = str(linha['Conta']).strip()
+    if "Convenio.:" in registro:
+        convenio_atual_endo_nao_pagos = " ".join(registro.split()[3:])
         convenio_atual_endo_nao_pagos = dicionario_convenios.get(convenio_atual_endo_nao_pagos, convenio_atual_endo_nao_pagos)
-    elif "Prestador de Servico:" in registro:
-        # Encontra o índice onde começa a string "Prestador de Servico:"
-        start_index = registro.index("Prestador de Servico:") + len("Prestador de Servico:")
-        # Extrai o nome do médico a partir deste índice
-        medico_atual_endo_pagos = " ".join(registro[start_index:].strip().split)
+    elif "Laboratorio:" in registro:
+        medico_atual_endo_nao_pagos = " ".join(registro.split()[1:])
+        medico_atual_endo_nao_pagos = medico_atual_endo_nao_pagos.replace("Exame de Endoscopia Digestiva", "")
     else:
         # Inclui a linha atual no processamento, adicionando o médico e convênio atuais
         dados_processados_endo_nao_pagos.append({
@@ -676,9 +669,9 @@ dados_processados_endo_pagos_final = dados_processados_endo_pagos.ffill()
 dados_processados_endo_pagos_df = pd.DataFrame(dados_processados_endo_pagos_final)
 
 
-dados_processados_endo_nao_pagos = pd.DataFrame(dados_processados_endo_nao_pagos)
-dados_processados_endo_nao_pagos_final = dados_processados_endo_nao_pagos.ffill()
-dados_processados_endo_nao_pagos_df = pd.DataFrame(dados_processados_endo_nao_pagos_final)
+dados_precessados_endo_nao_pagos = pd.DataFrame(dados_processados_endo_nao_pagos)
+dados_precessados_endo_nao_pagos_final = dados_precessados_endo_nao_pagos.ffill()
+dados_precessados_endo_nao_pagos_df = pd.DataFrame(dados_precessados_endo_nao_pagos_final)
 
 #Ajustando as datas e os formatos de Data
 dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
@@ -693,21 +686,23 @@ dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_fatu
 dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento'], errors='coerce', format='%d/%m/%Y')
 dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_faturar_df['Alta']).dt.strftime('%d/%m/%Y')
 dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento']).dt.strftime('%d/%m/%Y')
-dados_processados_endo_pagos_df['Data'] = pd.to_datetime(dados_processados_endo_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_endo_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_endo_nao_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_endo_pagos_df['Data'] = pd.to_datetime(dados_processados_endo_pagos_df['Data']).dt.strftime('%d/%m/%Y')
-dados_processados_endo_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_endo_nao_pagos_df['Data']).dt.strftime('%d/%m/%Y')
-dados_processados_endo_pagos_df['Pago'] = pd.to_datetime(dados_processados_endo_pagos_df['Pago'], errors='coerce', format='%d/%m/%Y')
-dados_processados_endo_pagos_df['Pago'] = pd.to_datetime(dados_processados_endo_pagos_df['Pago']).dt.strftime('%d/%m/%Y')
-dados_processados_endo_nao_pagos_df['Realizado'] = pd.to_datetime(dados_processados_endo_nao_pagos_df['Realizado'], errors='coerce', format='%d/%m/%Y')
-dados_processados_endo_nao_pagos_df['Realizado'] = pd.to_datetime(dados_processados_endo_nao_pagos_df['Realizado']).dt.strftime('%d/%m/%Y')
+dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(dados_processados_endo_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y')
+dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(dados_precessados_endo_nao_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y')
+dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(dados_processados_endo_pagos_df['Data Atend.']).dt.strftime('%d/%m/%Y')
+dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(dados_precessados_endo_nao_pagos_df['Data Atend.']).dt.strftime('%d/%m/%Y')
 
 
 #Retirando as linhas que contêm a palavra "Serv. Profissionais"
-dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
-dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
-dados_processados_endo_pagos_df = dados_processados_endo_pagos_df[~dados_processados_endo_pagos_df['Procedimento'].str.contains("Rec. Complementares", na=False)]
-dados_processados_endo_nao_pagos_df = dados_processados_endo_nao_pagos_df[~dados_processados_endo_nao_pagos_df['Procedimento'].str.contains("Rec. Complementares", na=False)]
+retirar_palavras = ["Total Convenio", "V. Recebido", "Valor Geral", "Conta"]
+for palavra in retirar_palavras:
+    dados_processados_endo_pagos_df = dados_processados_endo_pagos_df[~dados_processados_endo_pagos_df['Conta'].str.contains(palavra, na=False)]
+    dados_precessados_endo_nao_pagos_df = dados_precessados_endo_nao_pagos_df[~dados_precessados_endo_nao_pagos_df['Conta'].str.contains(palavra, na=False)]
+
+
+id_dados_processados_endo_pagos_df = dados_processados_endo_pagos_df['Conta'].unique()
+
+# Filtrando o dataframe df_faturados para remover os procedimentos já pagos
+dados_precessados_endo_nao_pagos_df = dados_precessados_endo_nao_pagos_df[~dados_precessados_endo_nao_pagos_df['Conta'].isin(id_dados_processados_endo_pagos_df)]
 
 dados_processados_sus_aih_df = dados_sus_aih(path_to_file_sus_aih)
 dados_processados_sus_ambulatorio_df = dados_sus_ambulatorio(path_to_file_sus_ambulatorio)
@@ -811,80 +806,51 @@ for nome_medico_endo_pagos, grupo in dados_processados_endo_pagos_df.groupby("Me
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
     grupo_sem_medico = grupo.drop('Medico', axis=1)
     # Converter a coluna "Valor" formatada de volta para float
-    grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(valor_para_float)
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(valor_para_float)
     # Agrupar por convênio e somar valores
-    soma_por_convenio = grupo_sem_medico.groupby('Convenio')["V. Faturado"].sum().reset_index()
+    soma_por_convenio = grupo_sem_medico.groupby('Convenio')["Valor"].sum().reset_index()
     #Gerando a soma total para cada uma das colunas
-    total_faturado = grupo_sem_medico['V. Faturado'].sum()
-    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    # Converter a coluna "Valor" formatada de volta para float
-    grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(valor_para_float)
-    grupo_sem_medico['V. Recebido'] = grupo_sem_medico['V. Recebido'].apply(valor_para_float)
-    grupo_sem_medico['Diferenca'] = grupo_sem_medico['Diferenca'].apply(valor_para_float)
-    # Agrupar por convênio e somar valores
-    soma_por_convenio = grupo_sem_medico.groupby('Convenio').agg({'V. Faturado': 'sum', 'V. Recebido': 'sum', 'Diferenca': 'sum'}).reset_index()
-    #Gerando a soma total para cada uma das colunas
-    total_faturado = soma_por_convenio['V. Faturado'].sum()
-    total_recebido = soma_por_convenio['V. Recebido'].sum()
-    total_diferenca = soma_por_convenio['Diferenca'].sum()
+    total_faturado = grupo_sem_medico['Valor'].sum()
     # Formatar as colunas de valores para o formato de moeda
-    soma_por_convenio["V. Faturado"] = soma_por_convenio["V. Faturado"].apply(formatar_valor)
-    soma_por_convenio['V. Recebido'] = soma_por_convenio['V. Recebido'].apply(formatar_valor)
-    soma_por_convenio['Diferenca'] = soma_por_convenio['Diferenca'].apply(formatar_valor)
-    total_faturado_formatado = formatar_valor(total_faturado)
-    total_recebido_formatado = formatar_valor(total_recebido)
-    total_diferenca_formatado = formatar_valor(total_diferenca)
-    dados_endo_pagos_soma_total = [["Total Faturado", "Total Recebido", "Total Diferença"], [total_faturado_formatado, total_recebido_formatado, total_diferenca_formatado]]
-    #Totais por paciente
-    totais_por_paciente = grupo_sem_medico.groupby("Paciente")[["V. Faturado","V. Recebido", "Diferenca"]].sum().reset_index()
-    totais_por_paciente["V. Faturado"] = totais_por_paciente["V. Faturado"].apply(formatar_valor)
-    totais_por_paciente["V. Recebido"] = totais_por_paciente["V. Recebido"].apply(formatar_valor)
-    totais_por_paciente["Diferenca"] = totais_por_paciente["Diferenca"].apply(formatar_valor)
-    totais_por_procedimento = grupo_sem_medico.groupby("Procedimento")[["V. Faturado","V. Recebido", "Diferenca"]].sum().reset_index()
-    totais_por_procedimento["Quantidade"] = grupo_sem_medico.groupby("Procedimento")["Procedimento"].count().reset_index(drop=True)
-    totais_por_procedimento["V. Faturado"] = totais_por_procedimento["V. Faturado"].apply(formatar_valor)
-    totais_por_procedimento["V. Recebido"] = totais_por_procedimento["V. Recebido"].apply(formatar_valor)
-    totais_por_procedimento["Diferenca"] = totais_por_procedimento["Diferenca"].apply(formatar_valor)
-    grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(formatar_valor)
-    grupo_sem_medico['V. Recebido'] = grupo_sem_medico['V. Recebido'].apply(formatar_valor)
-    grupo_sem_medico['Diferenca'] = grupo_sem_medico['Diferenca'].apply(formatar_valor)
-    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
-    dados_pdf_endo_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
-    dados_pdf_endo_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
-    dados_pdf_endo_pagos_por_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
-    dados_pdf_endo_pagos_por_procedimento = [totais_por_procedimento.columns.tolist()] + totais_por_procedimento.values.tolist()
-    #Lista final para a construção das tabelas
-    dados_medicos_endo_pagos[nome_medico_endo_pagos] = [dados_endo_pagos_soma_total, dados_pdf_endo_pagos, dados_pdf_endo_pagos_soma_conv, dados_pdf_endo_pagos_por_paciente, dados_pdf_endo_pagos_por_procedimento]
-
-for nome_medico_endo_nao_pagos, grupo in dados_processados_endo_nao_pagos_df.groupby("Medico"):
-    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    # Converter a coluna "Valor" formatada de volta para float
-    grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(valor_para_float)
-    # Agrupar por convênio e somar valores
-    soma_por_convenio = grupo_sem_medico.groupby('Convenio')["V. Faturado"].sum().reset_index()
-    #Gerando a soma total para cada uma das colunas
-    total_faturado = grupo_sem_medico['V. Faturado'].sum()
-    # Formatar as colunas de valores para o formato de moeda
-    soma_por_convenio["V. Faturado"] = soma_por_convenio["V. Faturado"].apply(formatar_valor)
+    soma_por_convenio["Valor"] = soma_por_convenio["Valor"].apply(formatar_valor)
     total_faturado_formatado = formatar_valor(total_faturado)
     # Preparar dados para terceira tabela
-    totais_por_paciente = grupo_sem_medico.groupby("Paciente")["V. Faturado"].sum().reset_index()
-    totais_por_paciente["V. Faturado"] = totais_por_paciente["V. Faturado"].apply(formatar_valor)
+    totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Valor"].sum().reset_index()
+    totais_por_paciente["Valor"] = totais_por_paciente["Valor"].apply(formatar_valor)
     # Preparar dados para a primeira tabela
-    totais_por_procedimento = grupo_sem_medico.groupby("Procedimento")["V. Faturado"].sum().reset_index()
-    totais_por_procedimento["Quantidade"] = grupo_sem_medico.groupby("Procedimento")["Procedimento"].count().reset_index(drop=True)
-    totais_por_procedimento["V. Faturado"] = totais_por_procedimento["V. Faturado"].apply(formatar_valor)
-    grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(formatar_valor)
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(formatar_valor)
     #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
-    dados_endo_nao_pagos_soma_total = [["Total Faturado"], [total_faturado_formatado]]
+    dados_pagos_soma_total = [["Valor"], [total_faturado_formatado]]
+    dados_pdf_endo_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
+    dados_pdf_endo_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
+    dados_pdf_endo_pagos_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
+    #Lista final para a construção das tabelas
+    dados_medicos_endo_pagos[nome_medico_endo_pagos] = [dados_pagos_soma_total, dados_pdf_endo_pagos, dados_pdf_endo_pagos_soma_conv, dados_pdf_endo_pagos_paciente]
+
+for nome_medico_endo_nao_pagos, grupo in dados_precessados_endo_nao_pagos_df.groupby("Medico"):
+    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
+    grupo_sem_medico = grupo.drop('Medico', axis=1)
+    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(valor_para_float)
+    # Agrupar por convênio e somar valores
+    soma_por_convenio = grupo_sem_medico.groupby('Convenio')["Valor"].sum().reset_index()
+    #Gerando a soma total para cada uma das colunas
+    total_faturado = grupo_sem_medico['Valor'].sum()
+    # Formatar as colunas de valores para o formato de moeda
+    soma_por_convenio["Valor"] = soma_por_convenio["Valor"].apply(formatar_valor)
+    total_faturado_formatado = formatar_valor(total_faturado)
+    # Preparar dados para terceira tabela
+    totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Valor"].sum().reset_index()
+    totais_por_paciente["Valor"] = totais_por_paciente["Valor"].apply(formatar_valor)
+    # Preparar dados para a primeira tabela
+    grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(formatar_valor)
+    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    dados_nao_pagos_soma_total = [["Valor"], [total_faturado_formatado]]
     dados_pdf_endo_nao_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_endo_nao_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
-    dados_pdf_endo_nao_pagos_por_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
-    dados_pdf_endo_nao_pagos_por_procedimento = [totais_por_procedimento.columns.tolist()] + totais_por_procedimento.values.tolist()
+    dados_pdf_endo_nao_pagos_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
     #Lista final para a construção das tabelas
-    dados_medicos_endo_nao_pagos[nome_medico_endo_nao_pagos] = [dados_endo_nao_pagos_soma_total, dados_pdf_endo_nao_pagos, dados_pdf_endo_nao_pagos_soma_conv, dados_pdf_endo_nao_pagos_por_paciente, dados_pdf_endo_nao_pagos_por_procedimento]
+    dados_medicos_endo_nao_pagos[nome_medico_endo_nao_pagos] = [dados_nao_pagos_soma_total, dados_pdf_endo_nao_pagos, dados_pdf_endo_nao_pagos_soma_conv, dados_pdf_endo_nao_pagos_paciente]
 
 for nome_medico_sus_aih, grupo in dados_processados_sus_aih_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
@@ -981,7 +947,6 @@ for nome_medico in todos_medicos:
         for titulo, dados in [("Valores por procedimento", dados_medicos_endo_pagos[nome_medico][1]),
                               ("Totais por Convênio", dados_medicos_endo_pagos[nome_medico][2]),
                               ("Totais por Paciente", dados_medicos_endo_pagos[nome_medico][3]),
-                              ("Totais por Procedimento", dados_medicos_endo_pagos[nome_medico][4]),
                               ("Soma Total", dados_medicos_endo_pagos[nome_medico][0])]:
             tabelas_endo_pagos.append((titulo, dados))
 
@@ -990,7 +955,6 @@ for nome_medico in todos_medicos:
         for titulo, dados in [("Valores por procedimento", dados_medicos_endo_nao_pagos[nome_medico][1]),
                               ("Totais por Convênio", dados_medicos_endo_nao_pagos[nome_medico][2]),
                               ("Totais por Paciente", dados_medicos_endo_nao_pagos[nome_medico][3]),
-                              ("Totais por Procedimento", dados_medicos_endo_nao_pagos[nome_medico][4]),
                               ("Soma Total", dados_medicos_endo_nao_pagos[nome_medico][0])]:
             tabelas_endo_nao_pagos.append((titulo, dados))
 

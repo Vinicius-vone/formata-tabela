@@ -123,7 +123,7 @@ def on_page(canvas, doc):
     styles = getSampleStyleSheet()
 
     # Carrega a imagem e ajusta seu tamanho proporcionalmente
-    header = Image('C:/Users/TI 2/Desktop/Códigos Python/Logo hospital.png')
+    header = Image('Logo hospital.png')
     max_height = 0.3 * inch  # Altura máxima para a imagem do cabeçalho
     image_aspect = header.imageWidth / header.imageHeight  # Calcula a proporção da imagem
 
@@ -452,7 +452,7 @@ def dados_sus_ambulatorio(file_path):
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio = selecionar_arquivo_e_diretorio()
-output_directory = "C:/Users/TI 2/Desktop/Códigos Python/Relatórios Médicos/13-09-2024_16-10-2024/Relatórios"
+output_directory = "C:/Users/Pichau/Códigos Python/Relatórios Médicos/13-09-2024_19-10-2024"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
@@ -554,6 +554,7 @@ dicionario_convenios = {
     "SAUDE BRADESCO INDIVI":"Bradesco Ind", "ECT (EMP. BRAS. DE CO":"ECT", "PROASERV":"Proaserv", "CASU - CAIXA DE ASSIS":"CASU", "SASC - SANTA CASA SAU":"SASC",
     "USISAUDE (FUNDAÇAO SA":"Usisaude", "AECO-ASSOCIACAO DOS E":"AECO", "SABIN SINAI VITA ASSI":"SABIN", "CONSORCIO INTERMUNICIPAL DE SAUDE":"Cisver", "SASC - SANTA CASA SAUDE COMPLEMENT":"SASC",
     "ECT (EMP. BRAS. DE CORREIOS E TELE":"ECT", "ALBERGUE SANTO ANTONIO":"Albergue S. Antônio", "SIND TRAB IND MET MEC M EL SID":"Sind.Trab. Ind.", "GV CLINICAS MEDICINA DO TRABALHO":"GV",
+    "IPSM INST. PREV. SERV. MILITAR":"IPSM", "POSTAL SAUDE":"Postal Saúde"
     }
 
 
@@ -692,6 +693,11 @@ dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(dados_processado
 dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(dados_precessados_endo_nao_pagos_df['Data Atend.']).dt.strftime('%d/%m/%Y')
 
 
+
+dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
+dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
+
+
 #Retirando as linhas que contêm a palavra "Serv. Profissionais"
 retirar_palavras = ["Total Convenio", "V. Recebido", "Valor Geral", "Conta"]
 for palavra in retirar_palavras:
@@ -706,7 +712,6 @@ dados_precessados_endo_nao_pagos_df = dados_precessados_endo_nao_pagos_df[~dados
 
 dados_processados_sus_aih_df = dados_sus_aih(path_to_file_sus_aih)
 dados_processados_sus_ambulatorio_df = dados_sus_ambulatorio(path_to_file_sus_ambulatorio)
-dados_processados_sus_aih_df = dados_processados_sus_aih_df[~(dados_processados_sus_aih_df['Paciente']=='MARCO ANTONIO DE SOUSA ASSIS')]
 
 #Criação dos dicionários para cada médico
 dados_medicos_pagos = {}

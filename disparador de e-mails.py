@@ -1,84 +1,59 @@
-import win32com.client as win32
 import pandas as pd
-from tkinter import Tk, filedialog
-import os
-import unicodedata
+import win32com.client as win32
 
-def normalizar_nome(nome):
-    #função que retira acentos das palavras
-    nome_sem_acentos = ''.join(c for c in unicodedata.normalize('NFD', nome) if unicodedata.category(c) != 'Mn')
-    nome_upper = nome_sem_acentos.upper()
-    # Remover palavras específicas do nome do arquivo
-    nome_limpo = nome_upper.replace('_RELATORIO', '').replace('.PDF', '')
-    return nome_limpo
-
-# Seleção dos anexos - Cria uma lista com o nome de todos os arquivos presentes na pasta selecionada
-# Cria e esconde a janela principal do Tkinter
-root = Tk()
-root.withdraw()
-# Abre a janela de diálogo para o usuário escolher uma pasta
-folder_selected = filedialog.askdirectory()
-arquivos = os.listdir(folder_selected)
-arquivos_sem_correspondencia = set(arquivos)  # Conjunto para armazenar arquivos sem correspondência
-
-# Listas para rastrear os e-mails enviados e não enviados
-emails_enviados = []
-emails_nao_enviados = []
-
-#Definição da assinatura a ser inserida no e-mail
+# Assinatura do e-mail
 assinatura = """<p style="text-align: left;"><strong>Alfredo Vincícius Andrade Guimarães</strong><br>
-<strong>Setor de Faturamento</strong><br>
-<strong>Hospital de Nossa Senhora das Mercês</strong><br>
+<strong>Pós-doutorando</strong><br>
+<strong>PPGF - UFSJ</strong><br>
 <strong>Telefone: (32)98808-3456</strong> </p>
-<p style="text-align: left;"><a href="mailto:alfredovinicius@hospitaldasmerces.com">E-mail</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="https://wa.me/5532984475784">WhatsApp</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://t.me/viniciushnsm">Telegram</a></p>"""
+<p style="text-align: left;"><a href="mailto:afredovag@yahoo.com.br">E-mail</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://wa.me/5532988083456">WhatsApp</a>"""
 
-# Criando integração do Python com o Outlook
-outlook = win32.Dispatch("Outlook.Application")
-medicos_emails = medicos_emails = {
-    "Alfredo Vinícius": "kelonios@gmail.com",
-    "Maria Clara": "kelonios2000@yahoo.com.br",
-    "Antonio Rato" : "afredovag@yahoo.com.br"
-    # Adicione mais médicos conforme necessário
-} 
-periodo = "10 de outubro de 2023 a 10 de abril de 2024" #ainda vou ver como criar a variável, deixei como lista só pra deixa o objeto periodo já criado
+# Leitura dos dados de uma planilha Excel
+def fetch_student_data(file_path):
+    try:
+        df = pd.read_excel(file_path)
+        return df[['nome', 'matricula', 'nota', 'email']].values.tolist()
+    except Exception as e:
+        print(f"Erro ao ler a planilha Excel: {e}")
+        return []
 
-for medico, email_medico in medicos_emails.items():
-    nome_normalizado = normalizar_nome(medico)
+def initialize_outlook():
+    try:
+        outlook = win32.Dispatch('outlook.application')
+        return outlook
+    except Exception as e:
+        print(f"Erro ao inicializar o Outlook: {e}")
+        return None
 
-    # Tentativa de encontrar um arquivo que corresponda ao nome normalizado do médico
-    arquivo_medico = next((arq for arq in arquivos if nome_normalizado in normalizar_nome(arq)), None)
+def send_email_via_outlook(outlook, to_email, subject, body):
+    try:
+        mail = outlook.CreateItem(0)
+        mail.To = to_email
+        mail.Subject = subject
+        mail.HTMLBody = body
+        mail.Send()
+        print(f"E-mail enviado para {to_email}")
+    except Exception as e:
+        print(f"Erro ao enviar e-mail para {to_email}: {e}")
 
-    if arquivo_medico:
-        caminho_completo_arquivo = os.path.join(folder_selected, arquivo_medico)
-        arquivos_sem_correspondencia.discard(arquivo_medico)  # Remove o arquivo da lista de sem correspondência
-        
-        # Criando um e-mail
-        email = outlook.CreateItem(0)
-        email.To = email_medico
-        email.Subject = f"HNSM - Relatório de Honorários Médicos - {periodo}"
-        email.HTMLBody = f"""
-        <p>Prezado(a) Dr(a). {medico},</p>
-        <p>Segue em anexo o relatório dos honorários médicos a respeito dos procedimentos pagos, faturados e a faturar referentes ao período de {periodo}.</p>
-        <p>Atenciosamente,</p>
-        {assinatura}
-        """
-        email.Attachments.Add(caminho_completo_arquivo)
-        email.Send()
-        print(f"Email enviado para {medico}")
-        emails_enviados.append(f"{medico} ({email_medico})")
-    else:
-        print(f"Arquivo não encontrado para o médico: {medico}")
-        emails_nao_enviados.append(f"{medico} ({email_medico})")
+# Função principal
+def main():
+    file_path = "alunos.xlsx"  # Substitua pelo caminho para a sua planilha Excel
+    alunos = fetch_student_data(file_path)
+    outlook = initialize_outlook()
 
-# Escrevendo o relatório em um arquivo de texto
-caminho_arquivo_relatorio = os.path.join(folder_selected, 'relatorio_emails.txt')
-with open(caminho_arquivo_relatorio, 'w') as arquivo_relatorio:
-    arquivo_relatorio.write("E-mails Enviados:\n")
-    arquivo_relatorio.write("\n".join(emails_enviados))
-    arquivo_relatorio.write("\n\nE-mails Não Enviados (arquivo não encontrado):\n")
-    arquivo_relatorio.write("\n".join(emails_nao_enviados))
-    arquivo_relatorio.write("\n\nArquivos Sem Correspondência de Médico:\n")
-    arquivo_relatorio.write("\n".join(arquivos_sem_correspondencia))
+    if outlook:
+        for nome, matricula, nota, email in alunos:
+            # Personalizando o conteúdo do e-mail
+            subject = "Sua nota da prova"
+            body = f"""<p>Olá, {nome}!</p>
+            <p>Sua matrícula: {matricula}<br>Sua nota: {nota}</p>
+            <p>Atenciosamente,<br>Equipe Acadêmica</p>
+            {assinatura}"""
+            
+            # Enviando o e-mail
+            send_email_via_outlook(outlook, email, subject, body)
 
-print(f"Relatório de e-mails enviados e não enviados foi salvo como {caminho_arquivo_relatorio}.")
+if __name__ == "__main__":
+    main()

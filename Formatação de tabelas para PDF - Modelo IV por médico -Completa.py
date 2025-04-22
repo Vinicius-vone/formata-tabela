@@ -452,7 +452,7 @@ def dados_sus_ambulatorio(file_path):
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio = selecionar_arquivo_e_diretorio()
-output_directory = "C:/Users/Pichau/Códigos Python/Relatórios Médicos/17-12-2024_21-01-2025"
+output_directory = "C:/Users/Pichau/Códigos Python/Relatórios Médicos/18-02-2025_19-03-2025"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
@@ -520,6 +520,7 @@ dados_crua_inicial_a_faturar.reset_index(drop=True, inplace=True)
 dados_crua_inicial_a_faturar.columns = ['Nome do Paciente', 'Registro', 'Atendimento', 'Alta', 'Convenio']
 dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Emitido em:", na=False)]
 dados_crua_inicial_a_faturar['Convenio'] = dados_crua_inicial_a_faturar['Convenio'].str.replace('^\d+-', '', regex=True)
+dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Convenio:", na=False)]
 
 # Substitui strings vazias por NaN para identificar corretamente campos vazios
 dados_crua_inicial_endo_pagos.replace('', pd.NA, inplace=True)

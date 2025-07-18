@@ -86,7 +86,12 @@ def read_file_to_list(input_file_path):
 # Função para formatar valores em formato de moeda
 
 def formatar_valor(valor):
-    return "R${:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
+    if valor is None:
+        return "R$0,00"  # ou "" se preferir vazio
+    try:
+        return "R${:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
+    except (TypeError, ValueError):
+        return "R$0,00"
 
 # Função para converter valor formatado de volta para float
 def valor_para_float(valor_formatado):
@@ -452,7 +457,7 @@ def dados_sus_ambulatorio(file_path):
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio = selecionar_arquivo_e_diretorio()
-output_directory = "C:/Users/Pichau/Códigos Python/Relatórios Médicos/18-02-2025_19-03-2025"
+output_directory = "G:/Meu Drive/Hospital Nossa Senhora das Mercês/Relatórios Médicos/Relatórios/23-06-25_18-07-25"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
@@ -556,7 +561,7 @@ dicionario_convenios = {
     "USISAUDE (FUNDAÇAO SA":"Usisaude", "AECO-ASSOCIACAO DOS E":"AECO", "SABIN SINAI VITA ASSI":"SABIN", "CONSORCIO INTERMUNICIPAL DE SAUDE":"Cisver", "SASC - SANTA CASA SAUDE COMPLEMENT":"SASC",
     "ECT (EMP. BRAS. DE CORREIOS E TELE":"ECT", "ALBERGUE SANTO ANTONIO":"Albergue S. Antônio", "SIND TRAB IND MET MEC M EL SID":"Sind.Trab. Ind.", "GV CLINICAS MEDICINA DO TRABALHO":"GV",
     "IPSM INST. PREV. SERV. MILITAR":"IPSM", "POSTAL SAUDE":"Postal Saúde", "CISVER - CONSORCIO INTERMUNICI" : "Cisver", "CASSI - BANCO DO BRASIL" : "CASSI",
-    "IPSM INST. PREV. SERV":"IPSM", "GEAP SAUDE":"GEAP", "CASSI - BANCO DO BRAS":"CASSI","BRADESCO SAÚDE":"Bradesco"
+    "IPSM INST. PREV. SERV":"IPSM", "GEAP SAUDE":"GEAP", "CASSI - BANCO DO BRAS":"CASSI","BRADESCO SAÚDE":"Bradesco", "CISVER - CONSÓRCIO INTERMUNICI": "Cisver"
     }
 
 

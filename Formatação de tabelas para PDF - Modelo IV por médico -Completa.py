@@ -457,7 +457,7 @@ def dados_sus_ambulatorio(file_path):
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio = selecionar_arquivo_e_diretorio()
-output_directory = "G:/Meu Drive/Hospital Nossa Senhora das Mercês/Relatórios Médicos/Relatórios/23-06-25_18-07-25"
+output_directory = "G:/Meu Drive/Hospital Nossa Senhora das Mercês/Relatórios Médicos/Relatórios/22-08-25_22-09-25"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
@@ -526,6 +526,7 @@ dados_crua_inicial_a_faturar.columns = ['Nome do Paciente', 'Registro', 'Atendim
 dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Emitido em:", na=False)]
 dados_crua_inicial_a_faturar['Convenio'] = dados_crua_inicial_a_faturar['Convenio'].str.replace('^\d+-', '', regex=True)
 dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Convenio:", na=False)]
+dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Convenio'].str.contains("ORTOPEDIA", na=False)]
 
 # Substitui strings vazias por NaN para identificar corretamente campos vazios
 dados_crua_inicial_endo_pagos.replace('', pd.NA, inplace=True)
@@ -561,7 +562,9 @@ dicionario_convenios = {
     "USISAUDE (FUNDAÇAO SA":"Usisaude", "AECO-ASSOCIACAO DOS E":"AECO", "SABIN SINAI VITA ASSI":"SABIN", "CONSORCIO INTERMUNICIPAL DE SAUDE":"Cisver", "SASC - SANTA CASA SAUDE COMPLEMENT":"SASC",
     "ECT (EMP. BRAS. DE CORREIOS E TELE":"ECT", "ALBERGUE SANTO ANTONIO":"Albergue S. Antônio", "SIND TRAB IND MET MEC M EL SID":"Sind.Trab. Ind.", "GV CLINICAS MEDICINA DO TRABALHO":"GV",
     "IPSM INST. PREV. SERV. MILITAR":"IPSM", "POSTAL SAUDE":"Postal Saúde", "CISVER - CONSORCIO INTERMUNICI" : "Cisver", "CASSI - BANCO DO BRASIL" : "CASSI",
-    "IPSM INST. PREV. SERV":"IPSM", "GEAP SAUDE":"GEAP", "CASSI - BANCO DO BRAS":"CASSI","BRADESCO SAÚDE":"Bradesco", "CISVER - CONSÓRCIO INTERMUNICI": "Cisver"
+    "IPSM INST. PREV. SERV":"IPSM", "GEAP SAUDE":"GEAP", "CASSI - BANCO DO BRAS":"CASSI","BRADESCO SAÚDE":"Bradesco", "CISVER - CONSÓRCIO INTERMUNICI": "Cisver",
+    "IPSEMG - INSTITUTO DE PREVIDEN" : "IPSEMG", "COPASS SAUDE":"COPASS", "IPSEMG - INSTITUTO DE": "IPSEMG", "SAUDE CAIXA":"Saúde Caixa",
+    "CISVER - CONSÓRCIO IN": "Cisver"
     }
 
 
@@ -667,6 +670,7 @@ dados_processados_nao_pagos_final = dados_processados_nao_pagos_final[["Registro
 dados_processados_a_faturar = pd.DataFrame(dados_processados_a_faturar)
 dados_processados_a_faturar_final = dados_processados_a_faturar.ffill()
 dados_processados_a_faturar_final['Convenio'] = dados_processados_a_faturar_final['Convenio'].map(dicionario_convenios)
+
 
 dados_processados_pagos_df = pd.DataFrame(dados_processados_pagos_final)
 dados_processados_nao_pagos_df = pd.DataFrame(dados_processados_nao_pagos_final)

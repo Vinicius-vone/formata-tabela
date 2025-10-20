@@ -527,6 +527,8 @@ dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_
 dados_crua_inicial_a_faturar['Convenio'] = dados_crua_inicial_a_faturar['Convenio'].str.replace('^\d+-', '', regex=True)
 dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Convenio:", na=False)]
 dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Convenio'].str.contains("ORTOPEDIA", na=False)]
+dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Total de Registros por Unidade", na=False)]
+dados_crua_inicial_a_faturar = dados_crua_inicial_a_faturar[~dados_crua_inicial_a_faturar['Nome do Paciente'].str.contains("Unidade", na=False)]
 
 # Substitui strings vazias por NaN para identificar corretamente campos vazios
 dados_crua_inicial_endo_pagos.replace('', pd.NA, inplace=True)

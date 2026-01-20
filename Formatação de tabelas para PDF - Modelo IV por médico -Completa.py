@@ -58,7 +58,8 @@ ignore_patterns = [
     "| (Valores Pagos)               Com Valores do Filme no Total       Valores do Filme não Somado ao Repasse                                                     |",
     "Total de Registros por Convênio =>",
     "|                                                                                 Total p/este prestador ->",
-    "|                                                                               Repasse p/este prestador ->"
+    "|                                                                               Repasse p/este prestador ->",
+    "| CNPJ: 24.731.747/0001-88 PRACA BARAO DE ITAMBE                    Bairro: CENTRO                    Cidade: SAO JOAO DEL REI             Fone: 32 3379-2800  |"
 ]
 
 def line_should_be_ignored(line):

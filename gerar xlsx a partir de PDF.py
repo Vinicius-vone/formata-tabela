@@ -1,7 +1,7 @@
 import pdfplumber
 import pandas as pd
 
-caminho_pdf = "C:/Users/TI2/Downloads/247317470001-sadt (8).pdf"
+caminho_pdf = "C:/Users/TI2/Downloads/HOSPITAL MERCES-R$ 160.281,37.pdf"
 
 tabelas = []
 

@@ -12,6 +12,10 @@ import re
 import matplotlib.pyplot as plt
 import glob
 
+DATA_INICIAL = pd.Timestamp("2025-10-01")
+DATA_FINAL = pd.Timestamp("2026-04-23")
+
+
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Padrões de linhas para ignorar
 ignore_patterns = [
@@ -458,7 +462,7 @@ def dados_sus_ambulatorio(file_path):
 
 
 path_to_file_pagos, path_to_file_nao_pagos, path_to_file_a_faturar, subtitulo, path_to_file_endo_pago, path_to_file_endo_nao_pago, path_to_file_sus_aih, path_to_file_sus_ambulatorio = selecionar_arquivo_e_diretorio()
-output_directory = "G:/Meu Drive/Hospital Nossa Senhora das Mercês/Relatórios Médicos/Relatórios/22-08-25_22-09-25"
+output_directory = "G:/Meu Drive/Hospital Nossa Senhora das Mercês/Relatórios Médicos/Relatório Bernardo Correa"
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
 # Ler arquivo e criar lista
 lines_list_pagos = read_file_to_list(path_to_file_pagos)
@@ -567,7 +571,7 @@ dicionario_convenios = {
     "IPSM INST. PREV. SERV. MILITAR":"IPSM", "POSTAL SAUDE":"Postal Saúde", "CISVER - CONSORCIO INTERMUNICI" : "Cisver", "CASSI - BANCO DO BRASIL" : "CASSI",
     "IPSM INST. PREV. SERV":"IPSM", "GEAP SAUDE":"GEAP", "CASSI - BANCO DO BRAS":"CASSI","BRADESCO SAÚDE":"Bradesco", "CISVER - CONSÓRCIO INTERMUNICI": "Cisver",
     "IPSEMG - INSTITUTO DE PREVIDEN" : "IPSEMG", "COPASS SAUDE":"COPASS", "IPSEMG - INSTITUTO DE": "IPSEMG", "SAUDE CAIXA":"Saúde Caixa",
-    "CISVER - CONSÓRCIO IN": "Cisver"
+    "CISVER - CONSÓRCIO IN": "Cisver","PARTICULAR":"Particular","PACOTE":"Pacote"
     }
 
 
@@ -688,29 +692,71 @@ dados_precessados_endo_nao_pagos = pd.DataFrame(dados_processados_endo_nao_pagos
 dados_precessados_endo_nao_pagos_final = dados_precessados_endo_nao_pagos.ffill()
 dados_precessados_endo_nao_pagos_df = pd.DataFrame(dados_precessados_endo_nao_pagos_final)
 
-#Ajustando as datas e os formatos de Data
-dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago'], errors='coerce', format='%d/%m/%Y')
-dados_processados_pagos_df['Data'] = pd.to_datetime(dados_processados_pagos_df['Data']).dt.strftime('%d/%m/%Y')
-dados_processados_pagos_df['Pago'] = pd.to_datetime(dados_processados_pagos_df['Pago']).dt.strftime('%d/%m/%Y')
-dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data'], errors='coerce', format='%d/%m/%Y')
-dados_processados_nao_pagos_df['Data'] = pd.to_datetime(dados_processados_nao_pagos_df['Data']).dt.strftime('%d/%m/%Y')
-dados_processados_nao_pagos_df['Realizado'] = pd.to_datetime(dados_processados_nao_pagos_df['Realizado'], errors='coerce', format='%d/%m/%Y')
-dados_processados_nao_pagos_df['Realizado'] = pd.to_datetime(dados_processados_nao_pagos_df['Realizado']).dt.strftime('%d/%m/%Y')
-dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_faturar_df['Alta'], errors='coerce', format='%d/%m/%Y')
-dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento'], errors='coerce', format='%d/%m/%Y')
-dados_processados_a_faturar_df['Alta'] = pd.to_datetime(dados_processados_a_faturar_df['Alta']).dt.strftime('%d/%m/%Y')
-dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(dados_processados_a_faturar_df['Atendimento']).dt.strftime('%d/%m/%Y')
-dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(dados_processados_endo_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y')
-dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(dados_precessados_endo_nao_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y')
-dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(dados_processados_endo_pagos_df['Data Atend.']).dt.strftime('%d/%m/%Y')
-dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(dados_precessados_endo_nao_pagos_df['Data Atend.']).dt.strftime('%d/%m/%Y')
+# Ajustando as datas e mantendo como datetime para permitir filtro e ordenação
+dados_processados_pagos_df['Data'] = pd.to_datetime(
+    dados_processados_pagos_df['Data'], errors='coerce', format='%d/%m/%Y'
+)
+dados_processados_pagos_df['Pago'] = pd.to_datetime(
+    dados_processados_pagos_df['Pago'], errors='coerce', format='%d/%m/%Y'
+)
+
+dados_processados_nao_pagos_df['Data'] = pd.to_datetime(
+    dados_processados_nao_pagos_df['Data'], errors='coerce', format='%d/%m/%Y'
+)
+dados_processados_nao_pagos_df['Realizado'] = pd.to_datetime(
+    dados_processados_nao_pagos_df['Realizado'], errors='coerce', format='%d/%m/%Y'
+)
+
+dados_processados_a_faturar_df['Alta'] = pd.to_datetime(
+    dados_processados_a_faturar_df['Alta'], errors='coerce', format='%d/%m/%Y'
+)
+dados_processados_a_faturar_df['Atendimento'] = pd.to_datetime(
+    dados_processados_a_faturar_df['Atendimento'], errors='coerce', format='%d/%m/%Y'
+)
+
+dados_processados_endo_pagos_df['Data Atend.'] = pd.to_datetime(
+    dados_processados_endo_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y'
+)
+dados_precessados_endo_nao_pagos_df['Data Atend.'] = pd.to_datetime(
+    dados_precessados_endo_nao_pagos_df['Data Atend.'], errors='coerce', format='%d/%m/%Y'
+)
 
 
 
 dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 
+
+# =========================================================
+# FILTRO DO PERÍODO
+# =========================================================
+# OBS:
+# Em "pagos", o script possui as colunas "Data" e "Pago".
+# Pelo rodapé do próprio relatório, "Pago" é data do pagamento.
+# Se você quiser filtrar os pagos por outra coluna, troque 'Pago' por 'Data'.
+
+dados_processados_pagos_df = dados_processados_pagos_df[
+    (dados_processados_pagos_df['Data'] >= DATA_INICIAL) &
+    (dados_processados_pagos_df['Data'] <= DATA_FINAL)
+].copy()
+
+dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[
+    (dados_processados_nao_pagos_df['Realizado'] >= DATA_INICIAL) &
+    (dados_processados_nao_pagos_df['Realizado'] <= DATA_FINAL)
+].copy()
+
+# =========================================================
+# ORDENAÇÃO CRONOLÓGICA
+# =========================================================
+dados_processados_pagos_df = dados_processados_pagos_df.sort_values(
+    by=['Medico', 'Data', 'Paciente', 'Procedimento'],
+    ascending=[True, True, True, True]
+)
+
+dados_processados_nao_pagos_df = dados_processados_nao_pagos_df.sort_values(
+    by=['Medico', 'Realizado', 'Paciente', 'Procedimento'],
+    ascending=[True, True, True, True]
+)
 
 #Retirando as linhas que contêm a palavra "Serv. Profissionais"
 retirar_palavras = ["Total Convenio", "V. Recebido", "Valor Geral", "Conta"]
@@ -737,90 +783,144 @@ dados_medicos_sus_aih = {}
 dados_medicos_sus_ambulatorio = {}
 
 #Preparação dos dados por médico para os pedidos não pagos
+#Preparação dos dados por médico para os pedidos não pagos
 for nome_medico_nao_pagos, grupo in dados_processados_nao_pagos_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico = grupo.drop('Medico', axis=1).copy()
+
+    # Garante ordenação cronológica dentro de cada médico
+    grupo_sem_medico = grupo_sem_medico.sort_values(
+        by=['Realizado', 'Paciente', 'Procedimento'],
+        ascending=[True, True, True]
+    )
+
+    # Converter valores para float
     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(valor_para_float)
+
     # Agrupar por convênio e somar valores
     soma_por_convenio = grupo_sem_medico.groupby('Convenio')["V. Faturado"].sum().reset_index()
-    #Gerando a soma total para cada uma das colunas
     total_faturado = grupo_sem_medico['V. Faturado'].sum()
-    # Formatar as colunas de valores para o formato de moeda
+
     soma_por_convenio["V. Faturado"] = soma_por_convenio["V. Faturado"].apply(formatar_valor)
     total_faturado_formatado = formatar_valor(total_faturado)
-    # Preparar dados para terceira tabela
+
     totais_por_paciente = grupo_sem_medico.groupby("Paciente")["V. Faturado"].sum().reset_index()
     totais_por_paciente["V. Faturado"] = totais_por_paciente["V. Faturado"].apply(formatar_valor)
-    # Preparar dados para a primeira tabela
+
+    # Formatação final apenas para exibição no PDF
     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(formatar_valor)
-    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    grupo_sem_medico["Data"] = grupo_sem_medico["Data"].dt.strftime('%d/%m/%Y')
+    grupo_sem_medico["Realizado"] = grupo_sem_medico["Realizado"].dt.strftime('%d/%m/%Y')
+
     dados_nao_pagos_soma_total = [["Total Faturado"], [total_faturado_formatado]]
     dados_pdf_nao_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_nao_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
     dados_pdf_nao_pagos_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
-    #Lista final para a construção das tabelas
-    dados_medicos_nao_pagos[nome_medico_nao_pagos] = [dados_nao_pagos_soma_total, dados_pdf_nao_pagos, dados_pdf_nao_pagos_soma_conv, dados_pdf_nao_pagos_paciente]
 
+    dados_medicos_nao_pagos[nome_medico_nao_pagos] = [
+        dados_nao_pagos_soma_total,
+        dados_pdf_nao_pagos,
+        dados_pdf_nao_pagos_soma_conv,
+        dados_pdf_nao_pagos_paciente
+    ]
 
 #Preparação dos dados por médico para os pedidos pagos
 for nome_medico_pagos, grupo in dados_processados_pagos_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    # Converter a coluna "Valor" formatada de volta para float
-    grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(valor_para_float)
-    # Agrupar por convênio e somar valores
-    soma_por_convenio = grupo_sem_medico.groupby('Convenio')["V. Faturado"].sum().reset_index()
-    #Gerando a soma total para cada uma das colunas
-    total_faturado = grupo_sem_medico['V. Faturado'].sum()
-    # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico = grupo.drop('Medico', axis=1).copy()
+
+    # Garante ordenação cronológica dentro de cada médico
+    grupo_sem_medico = grupo_sem_medico.sort_values(
+        by=['Pago', 'Paciente', 'Procedimento'],
+        ascending=[True, True, True]
+    )
+
+    # Converter valores para float
     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(valor_para_float)
     grupo_sem_medico['V. Recebido'] = grupo_sem_medico['V. Recebido'].apply(valor_para_float)
     grupo_sem_medico['Diferenca'] = grupo_sem_medico['Diferenca'].apply(valor_para_float)
+
     # Agrupar por convênio e somar valores
-    soma_por_convenio = grupo_sem_medico.groupby('Convenio').agg({'V. Faturado': 'sum', 'V. Recebido': 'sum', 'Diferenca': 'sum'}).reset_index()
-    #Gerando a soma total para cada uma das colunas
+    soma_por_convenio = grupo_sem_medico.groupby('Convenio').agg({
+        'V. Faturado': 'sum',
+        'V. Recebido': 'sum',
+        'Diferenca': 'sum'
+    }).reset_index()
+
     total_faturado = soma_por_convenio['V. Faturado'].sum()
     total_recebido = soma_por_convenio['V. Recebido'].sum()
     total_diferenca = soma_por_convenio['Diferenca'].sum()
-    # Formatar as colunas de valores para o formato de moeda
+
     soma_por_convenio["V. Faturado"] = soma_por_convenio["V. Faturado"].apply(formatar_valor)
     soma_por_convenio['V. Recebido'] = soma_por_convenio['V. Recebido'].apply(formatar_valor)
     soma_por_convenio['Diferenca'] = soma_por_convenio['Diferenca'].apply(formatar_valor)
+
     total_faturado_formatado = formatar_valor(total_faturado)
     total_recebido_formatado = formatar_valor(total_recebido)
     total_diferenca_formatado = formatar_valor(total_diferenca)
-    dados_pagos_soma_total = [["Total Faturado", "Total Recebido", "Total Diferença"], [total_faturado_formatado, total_recebido_formatado, total_diferenca_formatado]]
-    #Totais por paciente
-    totais_por_paciente = grupo_sem_medico.groupby("Paciente")[["V. Faturado","V. Recebido", "Diferenca"]].sum().reset_index()
+
+    dados_pagos_soma_total = [
+        ["Total Faturado", "Total Recebido", "Total Diferença"],
+        [total_faturado_formatado, total_recebido_formatado, total_diferenca_formatado]
+    ]
+
+    totais_por_paciente = grupo_sem_medico.groupby("Paciente")[["V. Faturado", "V. Recebido", "Diferenca"]].sum().reset_index()
     totais_por_paciente["V. Faturado"] = totais_por_paciente["V. Faturado"].apply(formatar_valor)
     totais_por_paciente["V. Recebido"] = totais_por_paciente["V. Recebido"].apply(formatar_valor)
     totais_por_paciente["Diferenca"] = totais_por_paciente["Diferenca"].apply(formatar_valor)
+
+    # Formatação final apenas para exibição no PDF
     grupo_sem_medico["V. Faturado"] = grupo_sem_medico["V. Faturado"].apply(formatar_valor)
     grupo_sem_medico['V. Recebido'] = grupo_sem_medico['V. Recebido'].apply(formatar_valor)
     grupo_sem_medico['Diferenca'] = grupo_sem_medico['Diferenca'].apply(formatar_valor)
-    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    grupo_sem_medico["Data"] = grupo_sem_medico["Data"].dt.strftime('%d/%m/%Y')
+    grupo_sem_medico["Pago"] = grupo_sem_medico["Pago"].dt.strftime('%d/%m/%Y')
+
     dados_pdf_pagos = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_pagos_soma_conv = [soma_por_convenio.columns.to_list()] + soma_por_convenio.values.tolist()
     dados_pdf_pagos_por_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
-    #Lista final para a construção das tabelas
-    dados_medicos_pagos[nome_medico_pagos] = [dados_pagos_soma_total, dados_pdf_pagos, dados_pdf_pagos_soma_conv, dados_pdf_pagos_por_paciente]
+
+    dados_medicos_pagos[nome_medico_pagos] = [
+        dados_pagos_soma_total,
+        dados_pdf_pagos,
+        dados_pdf_pagos_soma_conv,
+        dados_pdf_pagos_por_paciente
+    ]
 
 for nome_medico_a_faturar, grupo in dados_processados_a_faturar_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    #Fazendo a contagem da quantidade de pricedimentos por convênio
+    grupo_sem_medico = grupo.drop('Medico', axis=1).copy()
+    grupo_sem_medico['Atendimento'] = pd.to_datetime(
+    grupo_sem_medico['Atendimento'], errors='coerce', format='%d/%m/%Y'
+    )
+    grupo_sem_medico['Alta'] = pd.to_datetime(
+    grupo_sem_medico['Alta'], errors='coerce', format='%d/%m/%Y'
+    )
+    # Ordenação cronológica dos procedimentos a faturar
+    grupo_sem_medico = grupo_sem_medico.sort_values(
+        by=['Atendimento', 'Alta', 'Nome do Paciente'],
+        ascending=[True, True, True]
+    )
+
+    # Fazendo a contagem da quantidade de procedimentos por convênio
     contagem_por_convenio = grupo_sem_medico.groupby('Convenio')['Registro'].count().reset_index()
-    #Contagem da quantidade de procedimentos total
+
+    # Contagem total
     contagem_total = grupo_sem_medico["Registro"].count()
-    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+
+    # Formatação das datas apenas para exibição no PDF
+    grupo_sem_medico['Atendimento'] = grupo_sem_medico['Atendimento'].dt.strftime('%d/%m/%Y')
+    grupo_sem_medico['Alta'] = grupo_sem_medico['Alta'].dt.strftime('%d/%m/%Y')
+
     dados_pdf_contagem_total = [["Total"], [contagem_total]]
     dados_pdf_a_faturar = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_contagem_convenio_a_faturar = [contagem_por_convenio.columns.to_list()] + contagem_por_convenio.values.tolist()
-    #Lista final para a construção das tabelas
-    dados_medicos_a_faturar[nome_medico_a_faturar] = [dados_pdf_a_faturar, dados_pdf_contagem_convenio_a_faturar, dados_pdf_contagem_total]
+
+    dados_medicos_a_faturar[nome_medico_a_faturar] = [
+        dados_pdf_a_faturar,
+        dados_pdf_contagem_convenio_a_faturar,
+        dados_pdf_contagem_total
+    ]
 
 for nome_medico_endo_pagos, grupo in dados_processados_endo_pagos_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
@@ -874,46 +974,85 @@ for nome_medico_endo_nao_pagos, grupo in dados_precessados_endo_nao_pagos_df.gro
 
 for nome_medico_sus_aih, grupo in dados_processados_sus_aih_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico = grupo.drop('Medico', axis=1).copy()
+
+    # Garante que as colunas estejam em datetime dentro do loop
+    grupo_sem_medico["Internação"] = pd.to_datetime(
+        grupo_sem_medico["Internação"], errors='coerce', format='%d/%m/%Y'
+    )
+    grupo_sem_medico["Alta"] = pd.to_datetime(
+        grupo_sem_medico["Alta"], errors='coerce', format='%d/%m/%Y'
+    )
+
+    # Ordenação cronológica do SUS AIH
+    grupo_sem_medico = grupo_sem_medico.sort_values(
+        by=['Internação', 'Alta', 'Paciente'],
+        ascending=[True, True, True]
+    )
+
+    # Converter valor para float
     grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(valor_para_float)
-    # Agrupar por convênio e somar valores
+
     total_faturado = grupo_sem_medico['Valor'].sum()
-    # Formatar as colunas de valores para o formato de moeda
     total_faturado_formatado = formatar_valor(total_faturado)
-    # Preparar dados para terceira tabela
+
     totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Valor"].sum().reset_index()
     totais_por_paciente["Valor"] = totais_por_paciente["Valor"].apply(formatar_valor)
-    # Preparar dados para a primeira tabela
+
+    # Formatação final apenas para exibição
     grupo_sem_medico["Valor"] = grupo_sem_medico["Valor"].apply(formatar_valor)
-    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    grupo_sem_medico["Internação"] = grupo_sem_medico["Internação"].dt.strftime('%d/%m/%Y')
+    grupo_sem_medico["Alta"] = grupo_sem_medico["Alta"].dt.strftime('%d/%m/%Y')
+
+    # Montagem das tabelas do PDF
     dados_sus_aih_soma_total = [["Valor"], [total_faturado_formatado]]
     dados_pdf_sus_aih = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_sus_aih_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
-    #Lista final para a construção das tabelas
-    dados_medicos_sus_aih[nome_medico_sus_aih] = [dados_sus_aih_soma_total, dados_pdf_sus_aih, dados_pdf_sus_aih_paciente]
+
+    # Salvar no dicionário que será usado na geração do relatório
+    dados_medicos_sus_aih[nome_medico_sus_aih] = [
+        dados_sus_aih_soma_total,
+        dados_pdf_sus_aih,
+        dados_pdf_sus_aih_paciente
+    ]
+
 
 for nome_medico_sus_ambulatorio, grupo in dados_processados_sus_ambulatorio_df.groupby("Medico"):
     # Removendo a coluna "Medico" do DataFrame antes de gerar o PDF
-    grupo_sem_medico = grupo.drop('Medico', axis=1)
-    # Converter a coluna "Valor" formatada de volta para float
+    grupo_sem_medico = grupo.drop('Medico', axis=1).copy()
+
+    grupo_sem_medico["Data"] = pd.to_datetime(
+    grupo_sem_medico["Data"], errors='coerce', format='%d/%m/%Y'
+    )
+
+    # Ordenação cronológica do SUS Ambulatorio
+    grupo_sem_medico = grupo_sem_medico.sort_values(
+        by=['Data', 'Paciente', 'Procto'],
+        ascending=[True, True, True]
+    )
+
+    # Converter valor para float
     grupo_sem_medico['Vlr. Medico'] = grupo_sem_medico['Vlr. Medico'].apply(valor_para_float)
-    # Agrupar por convênio e somar valores
+
     total_faturado = grupo_sem_medico['Vlr. Medico'].sum()
-    # Formatar as colunas de valores para o formato de moeda
     total_faturado_formatado = formatar_valor(total_faturado)
-    # Preparar dados para terceira tabela
+
     totais_por_paciente = grupo_sem_medico.groupby("Paciente")["Vlr. Medico"].sum().reset_index()
-    totais_por_paciente["Vlr. Medico"] = totais_por_paciente["Vlr. Medico"].apply(formatar_valor) 
-    # Preparar dados para a primeira tabela
+    totais_por_paciente["Vlr. Medico"] = totais_por_paciente["Vlr. Medico"].apply(formatar_valor)
+
+    # Formatação final apenas para exibição
     grupo_sem_medico["Vlr. Medico"] = grupo_sem_medico["Vlr. Medico"].apply(formatar_valor)
-    #Criação dos objetos para incluir na lista a ser enviada para a contrução das tabelas
+    grupo_sem_medico["Data"] = grupo_sem_medico["Data"].dt.strftime('%d/%m/%Y')
+
     dados_sus_ambulatorio_soma_total = [["Vlr. Medico"], [total_faturado_formatado]]
     dados_pdf_sus_ambulatorio = [grupo_sem_medico.columns.to_list()] + grupo_sem_medico.values.tolist()
     dados_pdf_sus_ambulatorio_paciente = [totais_por_paciente.columns.tolist()] + totais_por_paciente.values.tolist()
-    #Lista final para a construção das tabelas
-    dados_medicos_sus_ambulatorio[nome_medico_sus_ambulatorio] = [dados_sus_ambulatorio_soma_total, dados_pdf_sus_ambulatorio, dados_pdf_sus_ambulatorio_paciente]
 
+    dados_medicos_sus_ambulatorio[nome_medico_sus_ambulatorio] = [
+        dados_sus_ambulatorio_soma_total,
+        dados_pdf_sus_ambulatorio,
+        dados_pdf_sus_ambulatorio_paciente
+    ]
 
 todos_medicos = set(dados_medicos_pagos.keys()) | set(dados_medicos_nao_pagos.keys()) | set(dados_medicos_a_faturar.keys()) | set(dados_medicos_endo_pagos.keys()) | set(dados_medicos_endo_nao_pagos.keys()) | set(dados_medicos_sus_aih.keys()) | set(dados_medicos_sus_ambulatorio.keys())
 
@@ -926,6 +1065,22 @@ dados_processados_sus_aih_df['Internação'] = pd.to_datetime(dados_processados_
 dados_processados_sus_aih_df['Alta'] = pd.to_datetime(dados_processados_sus_aih_df['Alta'], errors='coerce', format='%d/%m/%Y')
 dados_processados_sus_ambulatorio_df['Data'] = pd.to_datetime(dados_processados_sus_ambulatorio_df['Data'], errors='coerce', format='%d/%m/%Y')
 dados_processados_sus_ambulatorio_df['Vlr. Medico'] = dados_processados_sus_ambulatorio_df['Vlr. Medico'].apply(valor_para_float)
+
+
+dados_processados_a_faturar_df = dados_processados_a_faturar_df.sort_values(
+    by=['Medico', 'Atendimento', 'Alta', 'Nome do Paciente'],
+    ascending=[True, True, True, True]
+)
+
+dados_processados_sus_aih_df = dados_processados_sus_aih_df.sort_values(
+    by=['Medico', 'Internação', 'Alta', 'Paciente'],
+    ascending=[True, True, True, True]
+)
+
+dados_processados_sus_ambulatorio_df = dados_processados_sus_ambulatorio_df.sort_values(
+    by=['Medico', 'Data', 'Paciente', 'Procto'],
+    ascending=[True, True, True, True]
+)
 
 # dados_processados_sus_aih_df[(dados_processados_sus_aih_df['Medico']=='GUSTAVO HENRIQUE REIS DE OLIVEIRA')]
 

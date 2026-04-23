@@ -12,8 +12,6 @@ import re
 import matplotlib.pyplot as plt
 import glob
 
-DATA_INICIAL = pd.Timestamp("2025-10-01")
-DATA_FINAL = pd.Timestamp("2026-04-23")
 
 
 #FORMATAÇÃO DO DATAFRAME A PARTIR DO ARQUIVO TXT RETIRADO DIRETAMENTE DO SPDATA
@@ -727,23 +725,23 @@ dados_processados_pagos_df = dados_processados_pagos_df[~dados_processados_pagos
 dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[~dados_processados_nao_pagos_df['Procedimento'].str.contains("Serv. Profissionais", na=False)]
 
 
-# =========================================================
-# FILTRO DO PERÍODO
-# =========================================================
-# OBS:
-# Em "pagos", o script possui as colunas "Data" e "Pago".
-# Pelo rodapé do próprio relatório, "Pago" é data do pagamento.
-# Se você quiser filtrar os pagos por outra coluna, troque 'Pago' por 'Data'.
+# # =========================================================
+# # FILTRO DO PERÍODO
+# # =========================================================
+# # OBS:
+# # Em "pagos", o script possui as colunas "Data" e "Pago".
+# # Pelo rodapé do próprio relatório, "Pago" é data do pagamento.
+# # Se você quiser filtrar os pagos por outra coluna, troque 'Pago' por 'Data'.
 
-dados_processados_pagos_df = dados_processados_pagos_df[
-    (dados_processados_pagos_df['Data'] >= DATA_INICIAL) &
-    (dados_processados_pagos_df['Data'] <= DATA_FINAL)
-].copy()
+# dados_processados_pagos_df = dados_processados_pagos_df[
+#     (dados_processados_pagos_df['Data'] >= DATA_INICIAL) &
+#     (dados_processados_pagos_df['Data'] <= DATA_FINAL)
+# ].copy()
 
-dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[
-    (dados_processados_nao_pagos_df['Realizado'] >= DATA_INICIAL) &
-    (dados_processados_nao_pagos_df['Realizado'] <= DATA_FINAL)
-].copy()
+# dados_processados_nao_pagos_df = dados_processados_nao_pagos_df[
+#     (dados_processados_nao_pagos_df['Realizado'] >= DATA_INICIAL) &
+#     (dados_processados_nao_pagos_df['Realizado'] <= DATA_FINAL)
+# ].copy()
 
 # =========================================================
 # ORDENAÇÃO CRONOLÓGICA

@@ -376,7 +376,7 @@ def dados_sus_aih(file_path):
             # Processar linhas de dados
             if line.strip() and line[0].isdigit():
                 # Regex detalhada para capturar todos os campos
-                regex = r"(\d+) ([\w\s]+?) +(\d{10}) ([\w\s/-]+?) (\d{2}/\d{2}/\d{4}) (\d{2}/\d{2}/\d{4}) ([\w-]+) +(\d+) +(\d+) +(\d+,\d+) +(\d+,\d+)"
+                regex = r"(\d+) ([\w\s]+?) +(\d{10}) ([\w\s/-]+?) (\d{2}/\d{2}/\d{4}) (\d{2}/\d{2}/\d{4}) ([\w\s/-]+?) +(\d+) +(\d+) +(\d+,\d+) +(\d+,\d+)"
                 match = re.match(regex, line)
                 if match:
                     groups = match.groups()
